@@ -5,21 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="Added setup folders, updated aseprite, added placeholder objects">
-      <change afterPath="$PROJECT_DIR$/Assets/Art Assets.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Art Assets/GameJam_HpHorizontal64x64.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Art Assets/GameJam_HpHorizontal64x64.png.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Bosses.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Bosses/Boss1.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Bosses/Boss1/GameJam_CultistMeleeIdle.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Bosses/Boss1/GameJam_CultistMeleeIdle.png.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Prefabs.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Prefabs/Placeholder.prefab" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Prefabs/Placeholder.prefab.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ProjectSettings/SceneTemplateSettings.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Stagger.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Stagger.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Packages/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/manifest.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Packages/packages-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/packages-lock.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -111,7 +97,7 @@
       <option name="presentableId" value="Default" />
       <updated>1758141591340</updated>
       <workItem from="1758141593543" duration="288000" />
-      <workItem from="1758236294212" duration="624000" />
+      <workItem from="1758236294212" duration="1928000" />
     </task>
     <task id="LOCAL-00001" summary="connected project to github">
       <option name="closed" value="true" />
@@ -129,7 +115,15 @@
       <option name="project" value="LOCAL" />
       <updated>1758141867558</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Added setup folders, updated aseprite, added placeholder objects">
+      <option name="closed" value="true" />
+      <created>1758236936336</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1758236936336</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
