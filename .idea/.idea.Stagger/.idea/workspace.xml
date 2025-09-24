@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="">
+    <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="Added Hub, Arena, and Bootup scenes. Attached gameloop script to empty gameloop object on Boothup scene. Added code for Gameloop, UIHud, ResultUI, BossAttackMarker, PlayerController2D, ParryWindow, ComboMeter, Health, BossDummyAI, and Damage Dealer">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -28,6 +28,7 @@
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/DamageDealer.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Health.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
@@ -101,7 +102,7 @@
       <updated>1758141591340</updated>
       <workItem from="1758141593543" duration="288000" />
       <workItem from="1758236294212" duration="1928000" />
-      <workItem from="1758755100644" duration="324000" />
+      <workItem from="1758755100644" duration="1265000" />
     </task>
     <task id="LOCAL-00001" summary="connected project to github">
       <option name="closed" value="true" />
@@ -135,7 +136,15 @@
       <option name="project" value="LOCAL" />
       <updated>1758246738473</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Added Hub, Arena, and Bootup scenes. Attached gameloop script to empty gameloop object on Boothup scene. Added code for Gameloop, UIHud, ResultUI, BossAttackMarker, PlayerController2D, ParryWindow, ComboMeter, Health, BossDummyAI, and Damage Dealer">
+      <option name="closed" value="true" />
+      <created>1758755749112</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1758755749112</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -156,6 +165,7 @@
     <MESSAGE value="Added setup folders" />
     <MESSAGE value="Added setup folders, updated aseprite, added placeholder objects" />
     <MESSAGE value="saved project" />
-    <option name="LAST_COMMIT_MESSAGE" value="saved project" />
+    <MESSAGE value="Added Hub, Arena, and Bootup scenes. Attached gameloop script to empty gameloop object on Boothup scene. Added code for Gameloop, UIHud, ResultUI, BossAttackMarker, PlayerController2D, ParryWindow, ComboMeter, Health, BossDummyAI, and Damage Dealer" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added Hub, Arena, and Bootup scenes. Attached gameloop script to empty gameloop object on Boothup scene. Added code for Gameloop, UIHud, ResultUI, BossAttackMarker, PlayerController2D, ParryWindow, ComboMeter, Health, BossDummyAI, and Damage Dealer" />
   </component>
 </project>
