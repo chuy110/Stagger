@@ -404,8 +404,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1876e35d45725b44b799aff1da9d8e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ResultUI
-  winRoot: {fileID: 0}
-  loseRoot: {fileID: 0}
+  winRoot: {fileID: 763473516}
+  loseRoot: {fileID: 2019468872}
 --- !u!1 &459840732
 GameObject:
   m_ObjectHideFlags: 0
