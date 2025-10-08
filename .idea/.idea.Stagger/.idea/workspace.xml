@@ -4,7 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="wired up result UI" />
+    <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Art Assets.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Art Assets/GameJam_HpHorizontal64x64.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Art Assets/GameJam_HpHorizontal64x64.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Stagger.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Stagger.unity" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -103,7 +109,8 @@
       <workItem from="1758755100644" duration="2453000" />
       <workItem from="1758845570738" duration="237000" />
       <workItem from="1759448115095" duration="48000" />
-      <workItem from="1759449384418" duration="764000" />
+      <workItem from="1759449384418" duration="1028000" />
+      <workItem from="1759878292540" duration="1880000" />
     </task>
     <task id="LOCAL-00001" summary="connected project to github">
       <option name="closed" value="true" />
@@ -209,7 +216,15 @@
       <option name="project" value="LOCAL" />
       <updated>1759450149918</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="saved project">
+      <option name="closed" value="true" />
+      <created>1759450415948</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1759450415948</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -232,11 +247,11 @@
     <MESSAGE value="Added Hub, Arena, and Bootup scenes. Attached gameloop script to empty gameloop object on Boothup scene. Added code for Gameloop, UIHud, ResultUI, BossAttackMarker, PlayerController2D, ParryWindow, ComboMeter, Health, BossDummyAI, and Damage Dealer" />
     <MESSAGE value="Added Script Folders" />
     <MESSAGE value="Added UI screen stuff, hooked up on retry and back to hub buttons" />
-    <MESSAGE value="saved project" />
     <MESSAGE value="test" />
     <MESSAGE value="added portal hub and tags" />
     <MESSAGE value="hub portal" />
     <MESSAGE value="wired up result UI" />
-    <option name="LAST_COMMIT_MESSAGE" value="wired up result UI" />
+    <MESSAGE value="saved project" />
+    <option name="LAST_COMMIT_MESSAGE" value="saved project" />
   </component>
 </project>
