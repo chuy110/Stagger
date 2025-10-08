@@ -2,71 +2,90 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
-public enum GameState { Boot, Hub, Arena, Result }
+public enum GameState { Boot, Hub, Arena }
 
 public class GameLoop : MonoBehaviour {
     public static GameLoop I { get; private set; }
-    public GameState State { get; private set; } = GameState.Boot;
 
     [Header("Scene Names")]
     [SerializeField] string hubScene = "Hub";
-    [SerializeField] string arenaScene = "Arena_01";
+    [SerializeField] string defaultArena = "Arena_001";
 
-    [Header("Refs (assigned at runtime)")]
-    public PlayerController2D Player;
-    public BossDummyAI Boss;
+    public GameState State { get; private set; } = GameState.Boot;
 
     void Awake() {
         if (I != null) { Destroy(gameObject); return; }
         I = this; DontDestroyOnLoad(gameObject);
     }
 
-    IEnumerator Start() {
-        yield return LoadSingleAsync(SceneManager.GetActiveScene().name); // ensure Boot is active
-        yield return LoadAdditiveAsync(hubScene);
-        State = GameState.Hub;
+    // === Public API used by UI ===
+    public void EnterArena()                => StartCoroutine(EnterArenaCR(defaultArena));
+    public void EnterArena(string sceneName)=> StartCoroutine(EnterArenaCR(sceneName));
+    public void ReturnToHub()               => StartCoroutine(ReturnHubCR());
+    public void Retry()                     => StartCoroutine(DoRetryCR());
+
+    // === Internals ===
+    IEnumerator DoRetryCR() {
+        // Reload current arena (or default if none)
+        var target = State == GameState.Arena ? GetActiveArenaName() : defaultArena;
+        // Unload and load fresh
+        yield return UnloadIfLoaded(target);
+        yield return LoadAdditiveAsync(target);
+        RebindRefs();
+        ResultUI.I?.Hide();
     }
 
-    public void EnterArena() => StartCoroutine(EnterArenaCR());
-    IEnumerator EnterArenaCR() {
-        yield return UnloadIfLoaded(arenaScene);
-        yield return LoadAdditiveAsync(arenaScene);
+    IEnumerator EnterArenaCR(string sceneName) {
+        // Ensure hub is loaded if going to hub, otherwise just load target
+        if (sceneName == hubScene) {
+            if (!IsLoaded(hubScene)) yield return LoadAdditiveAsync(hubScene);
+            State = GameState.Hub;
+            RebindRefs();
+            ResultUI.I?.Hide();
+            yield break;
+        }
+        // Load arena additively
+        if (IsLoaded(sceneName)) yield return UnloadIfLoaded(sceneName);
+        yield return LoadAdditiveAsync(sceneName);
         State = GameState.Arena;
-
-        // find refs in freshly loaded scene
-        Player = FindObjectOfType<PlayerController2D>();
-        Boss   = FindObjectOfType<BossDummyAI>();
-
-        // hook win/lose
-        Player.GetComponent<Health>().onDeath += OnPlayerDeath;
-        Boss.GetComponent<Health>().onDeath   += OnBossDeath;
-
-        UIHud.I?.Bind(Player?.GetComponent<Health>(), Boss?.GetComponent<Health>());
+        RebindRefs();
         ResultUI.I?.Hide();
     }
 
-    public void ReturnToHub() => StartCoroutine(ReturnHubCR());
     IEnumerator ReturnHubCR() {
-        yield return UnloadIfLoaded(arenaScene);
+        // Unload all non-hub additive scenes
+        for (int i = 0; i < SceneManager.sceneCount; i++) {
+            var s = SceneManager.GetSceneAt(i);
+            if (s.name != hubScene && s.name != gameObject.scene.name) {
+                yield return SceneManager.UnloadSceneAsync(s);
+            }
+        }
+        if (!IsLoaded(hubScene)) yield return LoadAdditiveAsync(hubScene);
         State = GameState.Hub;
+        RebindRefs();
         ResultUI.I?.Hide();
     }
 
-    void OnPlayerDeath()  => ResultUI.I?.Show(false);
-    void OnBossDeath()    => ResultUI.I?.Show(true);
+    void RebindRefs() {
+        var player = Object.FindFirstObjectByType<PlayerController2D>();
+        var boss   = Object.FindFirstObjectByType<BossDummyAI>();
 
-    public void Retry()   => StartCoroutine(EnterArenaCR());
+        if (player) player.GetComponent<Health>().onDeath += OnPlayerDeath;
+        if (boss)   boss.GetComponent<Health>().onDeath   += OnBossDeath;
 
-    // --- helpers ---
+        UIHud.I?.Bind(player ? player.GetComponent<Health>() : null,
+                      boss   ? boss.GetComponent<Health>()   : null);
+    }
+
+    void OnPlayerDeath() => ResultUI.I?.Show(false);
+    void OnBossDeath()   => ResultUI.I?.Show(true);
+
+    // Helpers
     IEnumerator LoadAdditiveAsync(string n) {
         if (!IsLoaded(n)) {
             var op = SceneManager.LoadSceneAsync(n, LoadSceneMode.Additive);
             while (!op.isDone) yield return null;
         }
-    }
-    IEnumerator LoadSingleAsync(string n) {
-        var op = SceneManager.LoadSceneAsync(n, LoadSceneMode.Single);
-        while (!op.isDone) yield return null;
     }
     IEnumerator UnloadIfLoaded(string n) {
         if (IsLoaded(n)) {
@@ -78,5 +97,14 @@ public class GameLoop : MonoBehaviour {
         for (int i = 0; i < SceneManager.sceneCount; i++)
             if (SceneManager.GetSceneAt(i).name == n) return true;
         return false;
+    }
+    string GetActiveArenaName() {
+        // naive: return the last loaded non-hub scene
+        string name = defaultArena;
+        for (int i = 0; i < SceneManager.sceneCount; i++) {
+            var s = SceneManager.GetSceneAt(i);
+            if (s.name != hubScene && s.name != gameObject.scene.name) name = s.name;
+        }
+        return name;
     }
 }
