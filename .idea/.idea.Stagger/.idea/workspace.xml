@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="Implemented Start and Pause screens">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="Implemented basic foundation for save/load system">
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Hub.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Hub.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/Stagger.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Stagger.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -108,7 +109,7 @@
       <workItem from="1759449384418" duration="1028000" />
       <workItem from="1759878292540" duration="1926000" />
       <workItem from="1759956876682" duration="1748000" />
-      <workItem from="1760042386914" duration="3438000" />
+      <workItem from="1760042386914" duration="4330000" />
     </task>
     <task id="LOCAL-00001" summary="connected project to github">
       <option name="closed" value="true" />
@@ -254,7 +255,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760045133328</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="Implemented basic foundation for save/load system">
+      <option name="closed" value="true" />
+      <created>1760047246250</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1760047246250</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -286,6 +295,7 @@
     <MESSAGE value="Updated MapNode and added MapHubUI" />
     <MESSAGE value="Saved project, git config http&gt;postBuffer 524288000 to try and fix github sync" />
     <MESSAGE value="Implemented Start and Pause screens" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implemented Start and Pause screens" />
+    <MESSAGE value="Implemented basic foundation for save/load system" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented basic foundation for save/load system" />
   </component>
 </project>
