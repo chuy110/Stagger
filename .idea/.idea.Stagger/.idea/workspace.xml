@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="Duplicated map and pause canvases to hub scene (stagger is temporary for testing)">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Arena01.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Arena01.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectSettings/TagManager.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/TagManager.asset" afterDir="false" />
-    </list>
+    <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="Setup rough player in arena scene" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -109,7 +105,7 @@
       <workItem from="1759449384418" duration="1028000" />
       <workItem from="1759878292540" duration="1926000" />
       <workItem from="1759956876682" duration="1748000" />
-      <workItem from="1760042386914" duration="5294000" />
+      <workItem from="1760042386914" duration="5607000" />
     </task>
     <task id="LOCAL-00001" summary="connected project to github">
       <option name="closed" value="true" />
@@ -271,7 +267,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760048939247</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="Setup rough player in arena scene">
+      <option name="closed" value="true" />
+      <created>1760049764384</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1760049764384</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -305,6 +309,7 @@
     <MESSAGE value="Implemented Start and Pause screens" />
     <MESSAGE value="Implemented basic foundation for save/load system" />
     <MESSAGE value="Duplicated map and pause canvases to hub scene (stagger is temporary for testing)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Duplicated map and pause canvases to hub scene (stagger is temporary for testing)" />
+    <MESSAGE value="Setup rough player in arena scene" />
+    <option name="LAST_COMMIT_MESSAGE" value="Setup rough player in arena scene" />
   </component>
 </project>
