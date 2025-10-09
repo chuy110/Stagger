@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="" />
+    <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="Saved project, git config http&gt;postBuffer 524288000 to try and fix github sync">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Stagger.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Stagger.unity" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -25,6 +28,9 @@
     &quot;accountId&quot;: &quot;09534ba8-607b-4be1-8652-b62beb19a250&quot;
   }
 }</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/UI/PauseMenu2D.cs" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -102,6 +108,7 @@
       <workItem from="1759449384418" duration="1028000" />
       <workItem from="1759878292540" duration="1926000" />
       <workItem from="1759956876682" duration="1748000" />
+      <workItem from="1760042386914" duration="2479000" />
     </task>
     <task id="LOCAL-00001" summary="connected project to github">
       <option name="closed" value="true" />
@@ -231,7 +238,15 @@
       <option name="project" value="LOCAL" />
       <updated>1759958627551</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Saved project, git config http&gt;postBuffer 524288000 to try and fix github sync">
+      <option name="closed" value="true" />
+      <created>1760042446939</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1760042446939</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -261,6 +276,7 @@
     <MESSAGE value="saved project" />
     <MESSAGE value="TMP, Map Assets, Map Node and canvas" />
     <MESSAGE value="Updated MapNode and added MapHubUI" />
-    <option name="LAST_COMMIT_MESSAGE" value="Updated MapNode and added MapHubUI" />
+    <MESSAGE value="Saved project, git config http&gt;postBuffer 524288000 to try and fix github sync" />
+    <option name="LAST_COMMIT_MESSAGE" value="Saved project, git config http&gt;postBuffer 524288000 to try and fix github sync" />
   </component>
 </project>
