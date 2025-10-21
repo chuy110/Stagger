@@ -63,6 +63,8 @@ public class PauseMenu2D : MonoBehaviour
         if (playerInput) playerInput.enabled = true;
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
+        var pi = FindFirstObjectByType<UnityEngine.InputSystem.PlayerInput>();
+        if (pi) pi.enabled = true;
     }
 
     // Optional button hook
