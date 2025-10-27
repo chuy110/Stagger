@@ -382,6 +382,8 @@ GameObject:
   - component: {fileID: 73216863}
   - component: {fileID: 73216862}
   - component: {fileID: 73216861}
+  - component: {fileID: 73216864}
+  - component: {fileID: 73216865}
   m_Layer: 3
   m_Name: Player(Temp)
   m_TagString: Player
@@ -522,7 +524,7 @@ MonoBehaviour:
   m_ActionEvents: []
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
-  m_DefaultActionMap: df70fa95-8a34-4494-b137-73ab6b9c7d37
+  m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
 --- !u!114 &73216862
@@ -565,6 +567,31 @@ MonoBehaviour:
   max: 100
   gainPerSecond: 8
   decayPerSecond: 5
+--- !u!114 &73216864
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 73216856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 481129c20e4c78645ace8897d525475d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputBootstrap
+  gameplayMapName: Player
+--- !u!114 &73216865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 73216856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd7c1a70fa7b48d4ebb65c474d38498a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputProbe
 --- !u!1 &94240625
 GameObject:
   m_ObjectHideFlags: 0
