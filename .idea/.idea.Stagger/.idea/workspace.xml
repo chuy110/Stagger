@@ -27,8 +27,8 @@
 }</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/41b87322553648a1a76174c5109c71f91f7000/94/9aac9a7d/Time.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Core/Commands.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Core/Events.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Core/Managers/GameManager.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Player/PlayerCommands.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProjectColorInfo">{
@@ -110,7 +110,7 @@
       <workItem from="1760042386914" duration="5607000" />
       <workItem from="1761078182392" duration="4013000" />
       <workItem from="1762131834093" duration="744000" />
-      <workItem from="1762452943514" duration="306000" />
+      <workItem from="1762452943514" duration="879000" />
     </task>
     <task id="LOCAL-00001" summary="connected project to github">
       <option name="closed" value="true" />
