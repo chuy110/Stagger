@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Arena01.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Arena01.unity" afterDir="false" />
-    </list>
+    <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -114,7 +112,7 @@
       <workItem from="1760042386914" duration="5607000" />
       <workItem from="1761078182392" duration="4013000" />
       <workItem from="1762131834093" duration="744000" />
-      <workItem from="1762452943514" duration="4328000" />
+      <workItem from="1762452943514" duration="4965000" />
     </task>
     <task id="LOCAL-00001" summary="connected project to github">
       <option name="closed" value="true" />
