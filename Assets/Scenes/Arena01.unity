@@ -686,9 +686,10 @@ GameObject:
   - component: {fileID: 860436023}
   - component: {fileID: 860436022}
   - component: {fileID: 860436027}
-  m_Layer: 0
+  - component: {fileID: 860436028}
+  m_Layer: 7
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -903,6 +904,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ba1afc843925274abe8fa338eae5d35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDebug
+--- !u!114 &860436028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 860436020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb9b499f8d2f7974a86111e1b62bb21c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ParrySystem
+  _parryRadius: 1.5
+  _projectileLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  _reflectionDirection: {x: 0, y: 1}
+  _useReflectionAngle: 1
+  _onParrySuccess: {fileID: 11400000, guid: d3be0fa3874832041a5f928e14db842d, type: 2}
+  _onParryFailed: {fileID: 11400000, guid: 21d6e6cd03902364ebc0e17a09ab4925, type: 2}
+  _onPerfectParry: {fileID: 0}
+  _showDebugGizmos: 1
 --- !u!1 &870369646
 GameObject:
   m_ObjectHideFlags: 0
