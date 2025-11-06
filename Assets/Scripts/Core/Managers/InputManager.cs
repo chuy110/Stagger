@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Stagger.Core.Commands;
-using Stagger.Player;
 
 namespace Stagger.Core.Managers
 {
