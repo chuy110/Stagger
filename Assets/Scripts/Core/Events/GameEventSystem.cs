@@ -56,39 +56,8 @@ namespace Stagger.Core.Events
         }
     }
 
-    /// <summary>
-    /// MonoBehaviour component that listens to a GameEvent and invokes a UnityEvent response.
-    /// Attach this to GameObjects that need to respond to events.
-    /// </summary>
-    public class GameEventListener : MonoBehaviour
-    {
-        [Tooltip("The Game Event to listen to")]
-        public GameEvent Event;
-
-        [Tooltip("Response to invoke when the event is raised")]
-        public UnityEvent Response;
-
-        private void OnEnable()
-        {
-            if (Event != null)
-            {
-                Event.RegisterListener(this);
-            }
-        }
-
-        private void OnDisable()
-        {
-            if (Event != null)
-            {
-                Event.UnregisterListener(this);
-            }
-        }
-
-        public void OnEventRaised()
-        {
-            Response?.Invoke();
-        }
-    }
+    // GameEventListener has been moved to a separate file: GameEventListener.cs
+    // This allows Unity to attach it as a component more easily
 
     /// <summary>
     /// Generic typed Game Event that passes a value to listeners.
@@ -165,26 +134,7 @@ namespace Stagger.Core.Events
     [CreateAssetMenu(fileName = "New Float Event", menuName = "Stagger/Events/Float Event")]
     public class FloatGameEvent : GenericGameEvent<float> { }
 
-    [System.Serializable]
-    public class FloatUnityEvent : UnityEvent<float> { }
-
-    public class FloatGameEventListener : GenericGameEventListener<float>
-    {
-        [SerializeField] private FloatGameEvent _event;
-        [SerializeField] private FloatUnityEvent _response;
-
-        public override GenericGameEvent<float> Event
-        {
-            get => _event;
-            set => _event = value as FloatGameEvent;
-        }
-
-        public override UnityEvent<float> Response
-        {
-            get => _response;
-            set => _response = value as FloatUnityEvent;
-        }
-    }
+    // Typed listeners have been moved to separate files for easier component attachment
 
     /// <summary>
     /// Int Game Event for integer values (thread count, score, etc.)
