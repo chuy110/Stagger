@@ -107,7 +107,18 @@ namespace Stagger.Core.Managers
             if (!_inputEnabled || _playerController == null)
                 return;
 
-            float direction = context.ReadValue<float>();
+            // Read as Vector2 for axis composite, or float for single axis
+            float direction = 0f;
+            try
+            {
+                direction = context.ReadValue<float>();
+            }
+            catch
+            {
+                // If reading as float fails, try Vector2 (for 2D vector composites)
+                Vector2 vec = context.ReadValue<Vector2>();
+                direction = vec.x;
+            }
 
             if (_logInputs)
                 Debug.Log($"[InputManager] Move: {direction}");
@@ -157,7 +168,24 @@ namespace Stagger.Core.Managers
             if (!_inputEnabled || _playerController == null)
                 return;
 
-            float direction = _playerInput.Player.Move.ReadValue<float>();
+            // Get current movement direction
+            float direction = 0f;
+            try
+            {
+                direction = _playerInput.Player.Move.ReadValue<float>();
+            }
+            catch
+            {
+                // If reading as float fails, try Vector2
+                Vector2 vec = _playerInput.Player.Move.ReadValue<Vector2>();
+                direction = vec.x;
+            }
+
+            // If no movement input, default to facing direction (right = 1)
+            if (Mathf.Abs(direction) < 0.01f)
+            {
+                direction = 1f;
+            }
 
             if (_logInputs)
                 Debug.Log($"[InputManager] Dodge (direction: {direction})");
