@@ -66,7 +66,7 @@ public class Projectile : MonoBehaviour, IPoolable
         transform.localScale = Vector3.one * _data.Scale;
 
         // Set velocity
-        _rigidbody.velocity = _direction * _data.Speed;
+        _rigidbody.linearVelocity = _direction * _data.Speed;
 
         // Face direction of movement
         float angle = Mathf.Atan2(_direction.y, _direction.x) * Mathf.Rad2Deg;
@@ -110,7 +110,7 @@ public class Projectile : MonoBehaviour, IPoolable
         {
             float t = (Time.time - _spawnTime) / _data.Lifetime;
             float speedMultiplier = _data.MovementCurve.Evaluate(t);
-            _rigidbody.velocity = _direction * _data.Speed * speedMultiplier;
+            _rigidbody.linearVelocity = _direction * _data.Speed * speedMultiplier;
         }
     }
 
@@ -223,7 +223,7 @@ public class Projectile : MonoBehaviour, IPoolable
 
         _isReflected = true;
         _direction = newDirection.normalized;
-        _rigidbody.velocity = _direction * _data.Speed * 1.5f; // Reflected projectiles slightly faster
+        _rigidbody.linearVelocity = _direction * _data.Speed * 1.5f; // Reflected projectiles slightly faster
 
         // Face new direction
         float angle = Mathf.Atan2(_direction.y, _direction.x) * Mathf.Rad2Deg;
@@ -270,7 +270,7 @@ public class Projectile : MonoBehaviour, IPoolable
     public void OnReturnToPool()
     {
         _isActive = false;
-        _rigidbody.velocity = Vector2.zero;
+        _rigidbody.linearVelocity = Vector2.zero;
         
         // Destroy trail if exists
         if (_trail != null)
