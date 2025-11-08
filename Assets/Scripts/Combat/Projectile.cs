@@ -1,3 +1,4 @@
+using Stagger.Boss;
 using UnityEngine;
 using Stagger.Core.Pooling;
 using Stagger.Core.Events;

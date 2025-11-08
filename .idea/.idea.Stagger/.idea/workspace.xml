@@ -5,9 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Boss/BossController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Boss/BossController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Boss/BossStates.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Boss/BossStates.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Boss/ThreadSystem.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Boss/ThreadSystem.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Combat/Projectile.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Combat/Projectile.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -32,6 +30,7 @@
 }</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/41b87322553648a1a76174c5109c71f91f7000/94/9aac9a7d/Time.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Boss/BossController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Core/Events/GameEventSystem.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Core/Managers/GameManager.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Core/PlayerDebug.cs" root0="FORCE_HIGHLIGHTING" />
@@ -121,7 +120,8 @@
       <workItem from="1761078182392" duration="4013000" />
       <workItem from="1762131834093" duration="744000" />
       <workItem from="1762452943514" duration="7900000" />
-      <workItem from="1762593151435" duration="2886000" />
+      <workItem from="1762593151435" duration="3131000" />
+      <workItem from="1762619239548" duration="604000" />
     </task>
     <task id="LOCAL-00001" summary="connected project to github">
       <option name="closed" value="true" />
