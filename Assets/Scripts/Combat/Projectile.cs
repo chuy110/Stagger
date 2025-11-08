@@ -1,5 +1,6 @@
 using UnityEngine;
-using UnityEngine.Events;
+using Stagger.Core.Pooling;
+using Stagger.Core.Events;
 
 /// <summary>
 /// Projectile MonoBehaviour that can be pooled (Flyweight pattern).
@@ -8,7 +9,7 @@ using UnityEngine.Events;
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(SpriteRenderer))]
 [RequireComponent(typeof(Collider2D))]
-public class Projectile : MonoBehaviour
+public class Projectile : MonoBehaviour, IPoolable
 {
     [Header("Configuration")]
     [SerializeField] private ProjectileData _data;
@@ -18,12 +19,9 @@ public class Projectile : MonoBehaviour
     [SerializeField] private Rigidbody2D _rigidbody;
     [SerializeField] private Collider2D _collider;
     
-    [Header("Events - Observer Pattern")]
-    [Tooltip("Raised when projectile is parried")]
-    public UnityEvent OnProjectileParried;
-    
-    [Tooltip("Raised when projectile hits a target")]
-    public UnityEvent<float> OnProjectileHit;
+    [Header("Events")]
+    [SerializeField] private GameEvent _onProjectileParried;
+    [SerializeField] private FloatGameEvent _onProjectileHit;
 
     // Runtime state
     private Vector2 _direction;
@@ -68,7 +66,7 @@ public class Projectile : MonoBehaviour
         transform.localScale = Vector3.one * _data.Scale;
 
         // Set velocity
-        _rigidbody.linearVelocity = _direction * _data.Speed;
+        _rigidbody.velocity = _direction * _data.Speed;
 
         // Face direction of movement
         float angle = Mathf.Atan2(_direction.y, _direction.x) * Mathf.Rad2Deg;
@@ -112,7 +110,7 @@ public class Projectile : MonoBehaviour
         {
             float t = (Time.time - _spawnTime) / _data.Lifetime;
             float speedMultiplier = _data.MovementCurve.Evaluate(t);
-            _rigidbody.linearVelocity = _direction * _data.Speed * speedMultiplier;
+            _rigidbody.velocity = _direction * _data.Speed * speedMultiplier;
         }
     }
 
@@ -161,8 +159,8 @@ public class Projectile : MonoBehaviour
 
         Debug.Log($"[Projectile] Hit player! Damage: {_data.Damage}");
 
-        // Deal damage (Observer pattern)
-        OnProjectileHit?.Invoke(_data.Damage);
+        // Deal damage (will implement proper damage system later)
+        _onProjectileHit?.Raise(_data.Damage);
 
         // Spawn hit VFX
         if (_data.HitVFX != null)
@@ -173,6 +171,7 @@ public class Projectile : MonoBehaviour
         // Play hit sound
         if (_data.HitSound != null)
         {
+            // TODO: Play through AudioManager
             AudioSource.PlayClipAtPoint(_data.HitSound, transform.position);
         }
 
@@ -186,15 +185,15 @@ public class Projectile : MonoBehaviour
     {
         Debug.Log($"[Projectile] Hit boss! Reflected damage: {_data.ReflectedDamage}");
 
-        // Deal damage to boss - using the Boss namespace
-        Stagger.Boss.BossController bossController = boss.GetComponent<Stagger.Boss.BossController>();
+        // Deal damage to boss
+        BossController bossController = boss.GetComponent<BossController>();
         if (bossController != null)
         {
             bossController.OnDamaged(_data.ReflectedDamage);
         }
 
-        // Raise event (Observer pattern)
-        OnProjectileHit?.Invoke(_data.ReflectedDamage);
+        // Raise event
+        _onProjectileHit?.Raise(_data.ReflectedDamage);
 
         // Spawn hit VFX
         if (_data.HitVFX != null)
@@ -224,7 +223,7 @@ public class Projectile : MonoBehaviour
 
         _isReflected = true;
         _direction = newDirection.normalized;
-        _rigidbody.linearVelocity = _direction * _data.Speed * 1.5f; // Reflected projectiles slightly faster
+        _rigidbody.velocity = _direction * _data.Speed * 1.5f; // Reflected projectiles slightly faster
 
         // Face new direction
         float angle = Mathf.Atan2(_direction.y, _direction.x) * Mathf.Rad2Deg;
@@ -245,8 +244,8 @@ public class Projectile : MonoBehaviour
             AudioSource.PlayClipAtPoint(_data.ParrySound, transform.position);
         }
 
-        // Raise event (Observer pattern)
-        OnProjectileParried?.Invoke();
+        // Raise event
+        _onProjectileParried?.Raise();
 
         Debug.Log($"[Projectile] Reflected! New direction: {_direction}");
     }
@@ -259,9 +258,8 @@ public class Projectile : MonoBehaviour
         ReturnToPool();
     }
 
-    /// <summary>
-    /// Called when spawned from pool.
-    /// </summary>
+    // === IPoolable Implementation ===
+
     public void OnSpawnFromPool()
     {
         _isActive = true;
@@ -269,13 +267,10 @@ public class Projectile : MonoBehaviour
         gameObject.SetActive(true);
     }
 
-    /// <summary>
-    /// Called when returned to pool.
-    /// </summary>
     public void OnReturnToPool()
     {
         _isActive = false;
-        _rigidbody.linearVelocity = Vector2.zero;
+        _rigidbody.velocity = Vector2.zero;
         
         // Destroy trail if exists
         if (_trail != null)
@@ -296,16 +291,8 @@ public class Projectile : MonoBehaviour
         
         _isActive = false;
         
-        // Return via SimplePoolManager (Singleton pattern)
-        if (Stagger.Boss.SimplePoolManager.Instance != null)
-        {
-            Stagger.Boss.SimplePoolManager.Instance.Despawn("BossProjectile", this);
-        }
-        else
-        {
-            // Fallback: just disable if pool manager doesn't exist
-            gameObject.SetActive(false);
-        }
+        // Return via PoolManager
+        Stagger.Core.Managers.PoolManager.Instance?.ReturnToPool(gameObject);
     }
 
     // Debug visualization
