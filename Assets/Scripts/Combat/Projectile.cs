@@ -1,6 +1,5 @@
 using UnityEngine;
-using Stagger.Core.Pooling;
-using Stagger.Core.Events;
+using UnityEngine.Events;
 
 /// <summary>
 /// Projectile MonoBehaviour that can be pooled (Flyweight pattern).
@@ -9,7 +8,7 @@ using Stagger.Core.Events;
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(SpriteRenderer))]
 [RequireComponent(typeof(Collider2D))]
-public class Projectile : MonoBehaviour, IPoolable
+public class Projectile : MonoBehaviour
 {
     [Header("Configuration")]
     [SerializeField] private ProjectileData _data;
@@ -19,9 +18,12 @@ public class Projectile : MonoBehaviour, IPoolable
     [SerializeField] private Rigidbody2D _rigidbody;
     [SerializeField] private Collider2D _collider;
     
-    [Header("Events")]
-    [SerializeField] private GameEvent _onProjectileParried;
-    [SerializeField] private FloatGameEvent _onProjectileHit;
+    [Header("Events - Observer Pattern")]
+    [Tooltip("Raised when projectile is parried")]
+    public UnityEvent OnProjectileParried;
+    
+    [Tooltip("Raised when projectile hits a target")]
+    public UnityEvent<float> OnProjectileHit;
 
     // Runtime state
     private Vector2 _direction;
@@ -159,8 +161,8 @@ public class Projectile : MonoBehaviour, IPoolable
 
         Debug.Log($"[Projectile] Hit player! Damage: {_data.Damage}");
 
-        // Deal damage (will implement proper damage system later)
-        _onProjectileHit?.Raise(_data.Damage);
+        // Deal damage (Observer pattern)
+        OnProjectileHit?.Invoke(_data.Damage);
 
         // Spawn hit VFX
         if (_data.HitVFX != null)
@@ -171,7 +173,6 @@ public class Projectile : MonoBehaviour, IPoolable
         // Play hit sound
         if (_data.HitSound != null)
         {
-            // TODO: Play through AudioManager
             AudioSource.PlayClipAtPoint(_data.HitSound, transform.position);
         }
 
@@ -185,9 +186,15 @@ public class Projectile : MonoBehaviour, IPoolable
     {
         Debug.Log($"[Projectile] Hit boss! Reflected damage: {_data.ReflectedDamage}");
 
-        // Deal damage to boss (will implement proper boss health system later)
-        // For now, just log and raise event
-        _onProjectileHit?.Raise(_data.ReflectedDamage);
+        // Deal damage to boss - using the Boss namespace
+        Stagger.Boss.BossController bossController = boss.GetComponent<Stagger.Boss.BossController>();
+        if (bossController != null)
+        {
+            bossController.OnDamaged(_data.ReflectedDamage);
+        }
+
+        // Raise event (Observer pattern)
+        OnProjectileHit?.Invoke(_data.ReflectedDamage);
 
         // Spawn hit VFX
         if (_data.HitVFX != null)
@@ -238,8 +245,8 @@ public class Projectile : MonoBehaviour, IPoolable
             AudioSource.PlayClipAtPoint(_data.ParrySound, transform.position);
         }
 
-        // Raise event
-        _onProjectileParried?.Raise();
+        // Raise event (Observer pattern)
+        OnProjectileParried?.Invoke();
 
         Debug.Log($"[Projectile] Reflected! New direction: {_direction}");
     }
@@ -252,8 +259,9 @@ public class Projectile : MonoBehaviour, IPoolable
         ReturnToPool();
     }
 
-    // === IPoolable Implementation ===
-
+    /// <summary>
+    /// Called when spawned from pool.
+    /// </summary>
     public void OnSpawnFromPool()
     {
         _isActive = true;
@@ -261,6 +269,9 @@ public class Projectile : MonoBehaviour, IPoolable
         gameObject.SetActive(true);
     }
 
+    /// <summary>
+    /// Called when returned to pool.
+    /// </summary>
     public void OnReturnToPool()
     {
         _isActive = false;
@@ -285,8 +296,16 @@ public class Projectile : MonoBehaviour, IPoolable
         
         _isActive = false;
         
-        // Return via PoolManager
-        Stagger.Core.Managers.PoolManager.Instance?.ReturnToPool(gameObject);
+        // Return via SimplePoolManager (Singleton pattern)
+        if (Stagger.Boss.SimplePoolManager.Instance != null)
+        {
+            Stagger.Boss.SimplePoolManager.Instance.Despawn("BossProjectile", this);
+        }
+        else
+        {
+            // Fallback: just disable if pool manager doesn't exist
+            gameObject.SetActive(false);
+        }
     }
 
     // Debug visualization
