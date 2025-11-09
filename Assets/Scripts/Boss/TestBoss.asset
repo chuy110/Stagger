@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c87142759b2926f419397c52a0a63a1a, type: 3}
+  m_Name: TestBoss
+  m_EditorClassIdentifier: Assembly-CSharp::Stagger.Boss.BossData
+  BossName: Puppet Boss
+  Description: 
+  BossSprite: {fileID: 0}
+  AnimatorController: {fileID: 0}
+  Scale: 2
+  MaxHealth: 100
+  AttackInterval: 2
+  StunDuration: 0.5
+  ThreadCount: 5
+  Threads: []
+  ThreadBreakThresholds:
+  - 75
+  - 50
+  - 25
+  AttackPatterns: []
+  EnrageThreshold: 30
+  EnragedAttackInterval: 1
+  PossibleDrops: []
+  BossMusic: {fileID: 0}
+  HitSound: {fileID: 0}
+  ThreadBreakSound: {fileID: 0}
+  DefeatSound: {fileID: 0}
