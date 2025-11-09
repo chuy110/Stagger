@@ -12,21 +12,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c87142759b2926f419397c52a0a63a1a, type: 3}
   m_Name: TestBoss
   m_EditorClassIdentifier: Assembly-CSharp::Stagger.Boss.BossData
-  BossName: Puppet Boss
-  Description: 
-  BossSprite: {fileID: 0}
+  BossName: Test Puppet
+  Description: Test boss for combat
+  BossSprite: {fileID: -5052443071875374474, guid: 441b1ee35981aa84ab8ed47bd5a80ce1, type: 3}
   AnimatorController: {fileID: 0}
   Scale: 2
   MaxHealth: 100
   AttackInterval: 2
   StunDuration: 0.5
-  ThreadCount: 5
-  Threads: []
+  ThreadCount: 3
+  Threads:
+  - LimbName: Right Arm
+    AttachmentPoint: {x: 1, y: 0.5}
+    IsIntact: 0
+    LinkedAttackIndices: 
+  - LimbName: Left Arm
+    AttachmentPoint: {x: -1, y: 0.5}
+    IsIntact: 0
+    LinkedAttackIndices: 
+  - LimbName: Head
+    AttachmentPoint: {x: 0, y: 1}
+    IsIntact: 0
+    LinkedAttackIndices: 
   ThreadBreakThresholds:
   - 75
   - 50
   - 25
-  AttackPatterns: []
+  AttackPatterns:
+  - PatternName: Basic Attack
+    ProjectileData: {fileID: 11400000, guid: 539b4f1801823974e8275aea82dd9b2d, type: 2}
+    ProjectileCount: 1
+    SpreadAngle: 0
+    ProjectileDelay: 0
+    AimAtPlayer: 1
+    FixedDirection: {x: 0, y: 0}
+    AttackAnimation: 
   EnrageThreshold: 30
   EnragedAttackInterval: 1
   PossibleDrops: []
