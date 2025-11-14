@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="" />
+    <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Arena01.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Arena01.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Boss/BossController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Boss/BossController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Combat/ParrySystem.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Combat/ParrySystem.cs" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -119,6 +124,7 @@
       <workItem from="1762452943514" duration="7900000" />
       <workItem from="1762593151435" duration="3131000" />
       <workItem from="1762619239548" duration="1819000" />
+      <workItem from="1763081098363" duration="1920000" />
     </task>
     <task id="LOCAL-00001" summary="connected project to github">
       <option name="closed" value="true" />

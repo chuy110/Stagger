@@ -1,10 +1,8 @@
 using UnityEngine;
 using Stagger.Core.Events;
 
-/// <summary>
-/// Parry system handles detection of projectiles during parry window and reflection.
-/// Attach to Player GameObject.
-/// </summary>
+// Parry system handles detection of projectiles during parry window and reflection.
+// Attach to Player GameObject
 [RequireComponent(typeof(PlayerController))]
 public class ParrySystem : MonoBehaviour
 {
@@ -13,8 +11,8 @@ public class ParrySystem : MonoBehaviour
     [SerializeField] private LayerMask _projectileLayer;
     
     [Header("Reflection")]
-    [SerializeField] private Vector2 _reflectionDirection = Vector2.up; // Direction to reflect projectiles
-    [SerializeField] private bool _useReflectionAngle = true; // Use angle-based reflection
+    [SerializeField] private bool _reflectTowardBoss = true; // Reflect toward boss (recommended)
+    [SerializeField] private Vector2 _fallbackReflectionDirection = Vector2.up; // Fallback if boss not found
     
     [Header("Events")]
     [SerializeField] private GameEvent _onParrySuccess;
@@ -26,10 +24,21 @@ public class ParrySystem : MonoBehaviour
 
     private PlayerController _player;
     private int _parriedThisWindow = 0;
+    private GameObject _bossCache; // Cache boss reference for performance
 
     private void Awake()
     {
         _player = GetComponent<PlayerController>();
+    }
+
+    private void Start()
+    {
+        // Cache boss reference
+        _bossCache = GameObject.FindGameObjectWithTag("Boss");
+        if (_bossCache == null)
+        {
+            Debug.LogWarning("[ParrySystem] Boss not found! Projectiles will reflect upward as fallback.");
+        }
     }
 
     private void Update()
@@ -40,10 +49,8 @@ public class ParrySystem : MonoBehaviour
             CheckForProjectiles(parryState);
         }
     }
-
-    /// <summary>
-    /// Check for nearby projectiles to parry.
-    /// </summary>
+    
+    // Check for nearby projectiles to parry
     private void CheckForProjectiles(PlayerParryingState parryState)
     {
         // Find all colliders in parry radius
@@ -60,10 +67,8 @@ public class ParrySystem : MonoBehaviour
             }
         }
     }
-
-    /// <summary>
-    /// Attempt to parry a projectile based on timing.
-    /// </summary>
+    
+    // Attempt to parry a projectile based on timing
     private void TryParryProjectile(Projectile projectile, PlayerParryingState parryState)
     {
         if (!projectile.Data.CanBeParried)
@@ -96,10 +101,8 @@ public class ParrySystem : MonoBehaviour
             _onParryFailed?.Raise();
         }
     }
-
-    /// <summary>
-    /// Parry (reflect) a projectile.
-    /// </summary>
+    
+    // Parry (reflect) a projectile
     private void ParryProjectile(Projectile projectile, bool isPerfect)
     {
         _parriedThisWindow++;
@@ -107,16 +110,22 @@ public class ParrySystem : MonoBehaviour
         // Calculate reflection direction
         Vector2 reflectionDir;
         
-        if (_useReflectionAngle)
+        if (_reflectTowardBoss && _bossCache != null)
         {
-            // Reflect based on projectile's incoming direction
-            Vector2 incomingDir = projectile.transform.position - transform.position;
-            reflectionDir = Vector2.Reflect(incomingDir.normalized, Vector2.down);
+            // Calculate direction from projectile to boss
+            Vector3 projectilePos = projectile.transform.position;
+            Vector3 bossPos = _bossCache.transform.position;
+            
+            reflectionDir = (bossPos - projectilePos).normalized;
+            
+            Debug.Log($"[ParrySystem] Reflecting toward boss: {reflectionDir}");
         }
         else
         {
-            // Use fixed reflection direction
-            reflectionDir = _reflectionDirection.normalized;
+            // Use fallback direction (straight up)
+            reflectionDir = _fallbackReflectionDirection.normalized;
+            
+            Debug.Log($"[ParrySystem] Using fallback reflection direction: {reflectionDir}");
         }
 
         // Reflect the projectile
@@ -126,25 +135,21 @@ public class ParrySystem : MonoBehaviour
         if (isPerfect)
         {
             Debug.Log($"[ParrySystem] Perfect parry bonus applied!");
-            // TODO: Apply perfect parry bonuses
+            // TODO: Apply perfect parry bonuses (e.g., extra damage, slow-mo, etc.)
         }
 
         // Call player's parry success callback
         _player.OnParrySuccess();
     }
-
-    /// <summary>
-    /// Public method to check if a projectile can be parried right now.
-    /// </summary>
+    
+    // Public method to check if a projectile can be parried right now
     public bool CanParryNow()
     {
         return _player.StateMachine.CurrentState is PlayerParryingState parryState && 
                parryState.IsParryActive();
     }
-
-    /// <summary>
-    /// Reset parry counter (called when parry state ends).
-    /// </summary>
+    
+    // Reset parry counter (called when parry state ends)
     public void ResetParryCount()
     {
         if (_parriedThisWindow > 0)
@@ -180,5 +185,12 @@ public class ParrySystem : MonoBehaviour
 
         Gizmos.color = gizmoColor;
         Gizmos.DrawWireSphere(transform.position, _parryRadius);
+        
+        // Draw line to boss (if in parry state and boss exists)
+        if (_bossCache != null && _player != null && _player.StateMachine.CurrentState is PlayerParryingState)
+        {
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawLine(transform.position, _bossCache.transform.position);
+        }
     }
 }

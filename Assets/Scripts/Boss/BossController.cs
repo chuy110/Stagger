@@ -4,10 +4,8 @@ using UnityEngine;
 
 namespace Stagger.Boss
 {
-    /// <summary>
-    /// Simple object pool manager (Singleton pattern).
-    /// This is a basic implementation - replace with your project's PoolManager if available.
-    /// </summary>
+    // Simple object pool manager
+    // This is a basic implementation - replace with your project's PoolManager if available
     public class SimplePoolManager : MonoBehaviour
     {
         private static SimplePoolManager _instance;
@@ -88,11 +86,9 @@ namespace Stagger.Boss
             _pools[key].Enqueue(obj);
         }
     }
-
-    /// <summary>
-    /// Main boss controller managing AI, states, and attacks.
-    /// Uses State pattern for behavior and Singleton pattern for pooling.
-    /// </summary>
+    
+    // Main boss controller managing AI, states, and attacks.
+    // Uses State pattern for behavior and Singleton pattern for pooling
     [RequireComponent(typeof(BossHealth))]
     [RequireComponent(typeof(ThreadSystem))]
     public class BossController : MonoBehaviour
@@ -205,10 +201,8 @@ namespace Stagger.Boss
         {
             _stateMachine?.FixedUpdate();
         }
-
-        /// <summary>
-        /// Initialize boss with data.
-        /// </summary>
+        
+        // Initialize boss with data
         public void Initialize(BossData bossData)
         {
             _bossData = bossData;
@@ -254,10 +248,8 @@ namespace Stagger.Boss
 
             Debug.Log($"[BossController] Initialized: {bossData.BossName}");
         }
-
-        /// <summary>
-        /// Fire a projectile using an attack pattern (Command pattern for attacks).
-        /// </summary>
+        
+        // Fire a projectile using an attack pattern
         public void FireProjectile(AttackPattern pattern)
         {
             if (pattern == null || pattern.ProjectileData == null)
@@ -311,10 +303,8 @@ namespace Stagger.Boss
             _lastAttackTime = Time.time;
             Debug.Log($"[BossController] Fired attack: {pattern.PatternName}");
         }
-
-        /// <summary>
-        /// Spawn a single projectile from pool.
-        /// </summary>
+        
+        // Spawn a single projectile from pool
         private void SpawnProjectile(ProjectileData data, Vector3 position, Vector2 direction)
         {
             Projectile projectile = SimplePoolManager.Instance.Spawn<Projectile>(_projectilePoolKey);
@@ -324,19 +314,15 @@ namespace Stagger.Boss
                 projectile.Initialize(data, direction);
             }
         }
-
-        /// <summary>
-        /// Spawn projectile with delay.
-        /// </summary>
+        
+        // Spawn projectile with delay
         private IEnumerator DelayedSpawn(ProjectileData data, Vector3 position, Vector2 direction, float delay)
         {
             yield return new WaitForSeconds(delay);
             SpawnProjectile(data, position, direction);
         }
-
-        /// <summary>
-        /// Select a random attack pattern that's available (threads intact).
-        /// </summary>
+        
+        // Select a random attack pattern that's available (threads intact)
         public AttackPattern SelectRandomAttack()
         {
             if (_bossData.AttackPatterns == null || _bossData.AttackPatterns.Count == 0)
@@ -354,10 +340,8 @@ namespace Stagger.Boss
             _currentAttackIndex = Random.Range(0, availableAttacks.Count);
             return availableAttacks[_currentAttackIndex];
         }
-
-        /// <summary>
-        /// Enter enraged state.
-        /// </summary>
+        
+        // Enter enraged state
         private void Enrage()
         {
             _isEnraged = true;
@@ -369,10 +353,8 @@ namespace Stagger.Boss
                 _spriteRenderer.color = Color.red;
             }
         }
-
-        /// <summary>
-        /// Take damage and transition to stunned state.
-        /// </summary>
+        
+        /// Take damage and transition to stunned state
         public void OnDamaged(float damage)
         {
             _health.TakeDamage(damage);
@@ -385,10 +367,8 @@ namespace Stagger.Boss
                 _stateMachine.ChangeState(_stunnedState);
             }
         }
-
-        /// <summary>
-        /// Trigger thread break QTE (called by Observer pattern event).
-        /// </summary>
+        
+        // Trigger thread break QTE (called by Observer pattern event)
         public void TriggerThreadBreak(int thresholdIndex)
         {
             Debug.Log($"[BossController] Thread break triggered! Threshold: {thresholdIndex}");
@@ -410,10 +390,8 @@ namespace Stagger.Boss
                 _threadSystem.StartThreadBreakQTE(threadIndex);
             }
         }
-
-        /// <summary>
-        /// Called when all threads are broken - ready for execution.
-        /// </summary>
+        
+        // Called when all threads are broken, ready for execution
         public void OnAllThreadsBroken()
         {
             Debug.Log($"[BossController] All threads broken - ready for execution!");

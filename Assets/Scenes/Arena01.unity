@@ -1303,6 +1303,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1063316049}
+  - component: {fileID: 1063316050}
   m_Layer: 8
   m_Name: ProjectileSpawnPoint
   m_TagString: Untagged
@@ -1319,12 +1320,34 @@ Transform:
   m_GameObject: {fileID: 1063316048}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.5, z: 0}
+  m_LocalPosition: {x: 0, y: -0.017, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1354569363}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1063316050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1063316048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 523768cdcdf822b408959e823920ca01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectileSpawner
+  _projectileData: {fileID: 11400000, guid: 539b4f1801823974e8275aea82dd9b2d, type: 2}
+  _projectilePrefab: {fileID: 6952953168137140234, guid: 80de8c89fec243c46ba57d5896994621, type: 3}
+  _target: {fileID: 860436021}
+  _spawnInterval: 2
+  _autoSpawn: 1
+  _aimAtTarget: 1
+  _fixedDirection: {x: 0, y: -1}
+  _spreadAngle: 0
+  _poolKey: Projectile_Default
+  _initialPoolSize: 20
 --- !u!1 &1090528899
 GameObject:
   m_ObjectHideFlags: 0
@@ -1685,7 +1708,19 @@ MonoBehaviour:
       m_Calls: []
   OnThreadBreakThreshold:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1354569364}
+        m_TargetAssemblyTypeName: Stagger.Boss.BossController, Assembly-CSharp
+        m_MethodName: TriggerThreadBreak
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   _isInvulnerable: 0
 --- !u!61 &1354569367
 BoxCollider2D:
