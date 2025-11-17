@@ -2,9 +2,7 @@ using UnityEngine;
 
 namespace Stagger.Boss
 {
-    /// <summary>
-    /// State interface for State pattern.
-    /// </summary>
+    // State interface for State pattern
     public interface IState
     {
         void Enter();
@@ -12,10 +10,8 @@ namespace Stagger.Boss
         void FixedUpdate();
         void Exit();
     }
-
-    /// <summary>
-    /// Simple state machine implementation (State pattern).
-    /// </summary>
+    
+    // Simple state machine implementation (State pattern)
     public class StateMachine
     {
         private IState _currentState;
@@ -47,10 +43,8 @@ namespace Stagger.Boss
             _currentState?.FixedUpdate();
         }
     }
-
-    /// <summary>
-    /// Boss idle state - waiting between attacks.
-    /// </summary>
+    
+    // Boss idle state, waiting between attacks
     public class BossIdleState : IState
     {
         private BossController _boss;
@@ -66,11 +60,16 @@ namespace Stagger.Boss
             Debug.Log("[BossIdleState] Entered");
             _idleTime = Random.Range(0.5f, 1.5f);
         }
-
         public void Update()
         {
+            // Don't transition if boss is dead
+            if (_boss.Health.IsDead)
+            {
+                return;
+            }
+    
             _idleTime -= Time.deltaTime;
-            
+    
             if (_idleTime <= 0f)
             {
                 // Transition to attacking
@@ -85,10 +84,8 @@ namespace Stagger.Boss
             Debug.Log("[BossIdleState] Exited");
         }
     }
-
-    /// <summary>
-    /// Boss attacking state - firing projectiles.
-    /// </summary>
+    
+    // Boss attacking state: firing projectiles
     public class BossAttackingState : IState
     {
         private BossController _boss;
@@ -117,6 +114,12 @@ namespace Stagger.Boss
 
         public void Update()
         {
+            // Don't attack if boss is dead
+            if (_boss.Health.IsDead)
+            {
+                return;
+            }
+            
             if (!_attackExecuted && _currentAttack != null)
             {
                 // Fire projectile
@@ -138,10 +141,8 @@ namespace Stagger.Boss
             Debug.Log("[BossAttackingState] Exited");
         }
     }
-
-    /// <summary>
-    /// Boss stunned state - brief pause after taking damage.
-    /// </summary>
+    
+    // Boss stunned state: brief pause after taking damage
     public class BossStunnedState : IState
     {
         private BossController _boss;
@@ -165,6 +166,12 @@ namespace Stagger.Boss
 
         public void Update()
         {
+            // Don't transition if boss is dead
+            if (_boss.Health.IsDead)
+            {
+                return;
+            }
+            
             _stunnedTime += Time.deltaTime;
             
             if (_stunnedTime >= _stunDuration)
@@ -181,10 +188,8 @@ namespace Stagger.Boss
             Debug.Log("[BossStunnedState] Exited");
         }
     }
-
-    /// <summary>
-    /// Boss thread break state - waiting for player QTE.
-    /// </summary>
+    
+    // Boss thread break state: waiting for player QTE
     public class BossThreadBreakState : IState
     {
         private BossController _boss;
@@ -231,10 +236,8 @@ namespace Stagger.Boss
             }
         }
     }
-
-    /// <summary>
-    /// Boss execution state - being executed by player.
-    /// </summary>
+    
+    // Boss execution state: being executed by player
     public class BossExecutionState : IState
     {
         private BossController _boss;
@@ -286,6 +289,60 @@ namespace Stagger.Boss
         public void Exit()
         {
             Debug.Log("[BossExecutionState] Exited");
+        }
+    }
+    
+    // Boss death state: boss is defeated and inactive
+    public class BossDeathState : IState
+    {
+        private BossController _boss;
+        private float _deathTime;
+        private bool _deathHandled;
+
+        public BossDeathState(BossController boss)
+        {
+            _boss = boss;
+        }
+
+        public void Enter()
+        {
+            Debug.Log("[BossDeathState] Entered - Boss is defeated!");
+            _deathTime = 0f;
+            _deathHandled = false;
+        
+            // Play death animation
+            // TODO: Trigger death animation
+        
+            // Stop all projectile spawning
+            // Boss should no longer attack
+        }
+
+        public void Update()
+        {
+            _deathTime += Time.deltaTime;
+        
+            // After death animation completes (e.g., 2 seconds)
+            if (_deathTime >= 2f && !_deathHandled)
+            {
+                _deathHandled = true;
+            
+                // Handle death consequences
+                // - Drop artifacts
+                // - Show victory screen
+                // - Disable boss GameObject
+            
+                Debug.Log("[BossDeathState] Death sequence complete");
+            
+                // Optionally disable the boss
+                _boss.gameObject.SetActive(false);
+            }
+        }
+
+        public void FixedUpdate() { }
+
+        public void Exit()
+        {
+            Debug.Log("[BossDeathState] Exited");
         }
     }
 }

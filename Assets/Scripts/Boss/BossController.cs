@@ -122,6 +122,7 @@ namespace Stagger.Boss
         private BossStunnedState _stunnedState;
         private BossThreadBreakState _threadBreakState;
         private BossExecutionState _executionState;
+        private BossDeathState _deathState;
 
         // Runtime state
         private float _lastAttackTime;
@@ -144,6 +145,7 @@ namespace Stagger.Boss
         public BossStunnedState StunnedState => _stunnedState;
         public BossThreadBreakState ThreadBreakState => _threadBreakState;
         public BossExecutionState ExecutionState => _executionState;
+        public BossDeathState DeathState => _deathState;
 
         private void Awake()
         {
@@ -173,6 +175,7 @@ namespace Stagger.Boss
             if (_health != null)
             {
                 _health.OnThreadBreakThreshold.AddListener(TriggerThreadBreak);
+                _health.OnBossDefeated.AddListener(OnBossDefeated);
             }
 
             // Initialize with boss data
@@ -185,11 +188,16 @@ namespace Stagger.Boss
                 Debug.LogError("[BossController] No BossData assigned!");
             }
         }
-
         private void Update()
         {
+            // Don't update state machine if boss is dead
+            if (_health != null && _health.IsDead)
+            {
+                return;
+            }
+    
             _stateMachine?.Update();
-            
+    
             // Check for enrage
             if (!_isEnraged && _health.HealthPercent <= _bossData.EnrageThreshold)
             {
@@ -199,6 +207,11 @@ namespace Stagger.Boss
 
         private void FixedUpdate()
         {
+            if (_health != null && _health.IsDead)
+            {
+                return;
+            }
+            
             _stateMachine?.FixedUpdate();
         }
         
@@ -242,6 +255,7 @@ namespace Stagger.Boss
             _stunnedState = new BossStunnedState(this);
             _threadBreakState = new BossThreadBreakState(this);
             _executionState = new BossExecutionState(this);
+            _deathState = new BossDeathState(this);
 
             // Start in idle state
             _stateMachine.Initialize(_idleState);
@@ -433,6 +447,15 @@ namespace Stagger.Boss
         private void DebugTakeDamage()
         {
             OnDamaged(_health.MaxHealth * 0.25f);
+        }
+        
+        // Called when boss is defeated.
+        public void OnBossDefeated()
+        {
+            Debug.Log($"[BossController] {_bossData.BossName} has been defeated!");
+    
+            // Transition to death state
+            _stateMachine.ChangeState(_deathState);
         }
     }
 }
