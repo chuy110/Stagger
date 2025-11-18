@@ -1662,10 +1662,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Stagger.Boss.ThreadSystem
   _bossData: {fileID: 11400000, guid: 4ac85329c58bd154eaae989a3ad1658e, type: 2}
   _ceilingAnchor: {fileID: 694701020}
-  _intactThreadColor: {r: 1, g: 0, b: 0, a: 1}
+  _intactThreadColor: {r: 1, g: 1, b: 1, a: 1}
   _brokenThreadColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  _threadWidth: 0.3
-  _threadMaterial: {fileID: 10302, guid: 0000000000000000f000000000000000, type: 0}
+  _threadWidth: 0.1
+  _threadMaterial: {fileID: 0}
   _qteWindowDuration: 2
   _qteKey: 32
   OnThreadBroken:
@@ -1760,7 +1760,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.6875, y: 1.9375}
+    oldSize: {x: 0.27, y: 0.31}
     newSize: {x: 0.27, y: 0.31}
     adaptiveTilingThreshold: 0.5
     drawMode: 0

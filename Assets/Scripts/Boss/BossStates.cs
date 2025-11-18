@@ -2,7 +2,9 @@ using UnityEngine;
 
 namespace Stagger.Boss
 {
-    // State interface for State pattern
+    /// <summary>
+    /// State interface for State pattern.
+    /// </summary>
     public interface IState
     {
         void Enter();
@@ -11,7 +13,9 @@ namespace Stagger.Boss
         void Exit();
     }
     
-    // Simple state machine implementation (State pattern)
+    /// <summary>
+    /// Simple state machine implementation (State pattern).
+    /// </summary>
     public class StateMachine
     {
         private IState _currentState;
@@ -44,7 +48,9 @@ namespace Stagger.Boss
         }
     }
     
-    // Boss idle state, waiting between attacks
+    /// <summary>
+    /// Boss idle state - waiting between attacks.
+    /// </summary>
     public class BossIdleState : IState
     {
         private BossController _boss;
@@ -60,10 +66,17 @@ namespace Stagger.Boss
             Debug.Log("[BossIdleState] Entered");
             _idleTime = Random.Range(0.5f, 1.5f);
         }
+
         public void Update()
         {
             // Don't transition if boss is dead
             if (_boss.Health.IsDead)
+            {
+                return;
+            }
+            
+            // Don't attack if all threads are broken (waiting for execution)
+            if (_boss.ThreadSystem.AllThreadsBroken)
             {
                 return;
             }
@@ -85,7 +98,9 @@ namespace Stagger.Boss
         }
     }
     
-    // Boss attacking state: firing projectiles
+    /// <summary>
+    /// Boss attacking state - firing projectiles.
+    /// </summary>
     public class BossAttackingState : IState
     {
         private BossController _boss;
@@ -142,7 +157,9 @@ namespace Stagger.Boss
         }
     }
     
-    // Boss stunned state: brief pause after taking damage
+    /// <summary>
+    /// Boss stunned state - brief pause after taking damage.
+    /// </summary>
     public class BossStunnedState : IState
     {
         private BossController _boss;
@@ -189,7 +206,9 @@ namespace Stagger.Boss
         }
     }
     
-    // Boss thread break state: waiting for player QTE
+    /// <summary>
+    /// Boss thread break state - waiting for player QTE.
+    /// </summary>
     public class BossThreadBreakState : IState
     {
         private BossController _boss;
@@ -203,8 +222,8 @@ namespace Stagger.Boss
         {
             Debug.Log("[BossThreadBreakState] Entered - Thread Break QTE!");
             
-            // Boss is invulnerable during QTE
-            _boss.Health.SetInvulnerable(true);
+            // Boss is invulnerable during QTE (set by BossHealth.CheckThresholds)
+            // No need to set it again here
             
             // TODO: Play thread break animation
             // TODO: Slow-motion effect?
@@ -226,9 +245,6 @@ namespace Stagger.Boss
         {
             Debug.Log("[BossThreadBreakState] Exited");
             
-            // Remove invulnerability
-            _boss.Health.SetInvulnerable(false);
-            
             // Check if all threads are broken
             if (_boss.ThreadSystem.AllThreadsBroken)
             {
@@ -237,13 +253,15 @@ namespace Stagger.Boss
         }
     }
     
-    // Boss execution state: being executed by player
+    /// <summary>
+    /// Boss execution state - being executed by player.
+    /// </summary>
     public class BossExecutionState : IState
     {
         private BossController _boss;
         private float _executionTime;
         private float _executionDuration = 3f;
-        private bool _damageDealt = false;
+        private bool _killExecuted = false;
 
         public BossExecutionState(BossController boss)
         {
@@ -254,10 +272,7 @@ namespace Stagger.Boss
         {
             Debug.Log("[BossExecutionState] Entered - EXECUTION!");
             _executionTime = 0f;
-            _damageDealt = false;
-            
-            // Boss is completely frozen
-            _boss.Health.SetInvulnerable(true);
+            _killExecuted = false;
             
             // TODO: Play execution animation
             // TODO: Slow-motion effect
@@ -268,20 +283,22 @@ namespace Stagger.Boss
         {
             _executionTime += Time.deltaTime;
             
-            // Deal massive damage at midpoint
-            if (_executionTime >= _executionDuration * 0.5f && !_damageDealt)
+            // Kill boss at midpoint of execution
+            if (_executionTime >= _executionDuration * 0.5f && !_killExecuted)
             {
-                _boss.Health.SetInvulnerable(false);
-                _boss.Health.TakeDamage(_boss.Health.MaxHealth); // Instant kill
-                _damageDealt = true;
+                Debug.Log("[BossExecutionState] Executing kill...");
+                
+                // Use special execution kill method that bypasses invulnerability
+                if (_boss.Health != null)
+                {
+                    _boss.Health.ExecutionKill();
+                }
+                
+                _killExecuted = true;
             }
             
-            // Stay in this state until boss is dead
-            if (_executionTime >= _executionDuration)
-            {
-                // Boss should be dead now
-                Debug.Log("[BossExecutionState] Execution complete");
-            }
+            // Execution should automatically transition to death state
+            // when Health.Die() is called and OnBossDefeated event fires
         }
 
         public void FixedUpdate() { }
@@ -292,12 +309,14 @@ namespace Stagger.Boss
         }
     }
     
-    // Boss death state: boss is defeated and inactive
+    /// <summary>
+    /// Boss death state - boss is defeated and inactive.
+    /// </summary>
     public class BossDeathState : IState
     {
         private BossController _boss;
         private float _deathTime;
-        private bool _deathHandled;
+        private bool _victoryHandled;
 
         public BossDeathState(BossController boss)
         {
@@ -308,33 +327,38 @@ namespace Stagger.Boss
         {
             Debug.Log("[BossDeathState] Entered - Boss is defeated!");
             _deathTime = 0f;
-            _deathHandled = false;
-        
-            // Play death animation
-            // TODO: Trigger death animation
-        
-            // Stop all projectile spawning
-            // Boss should no longer attack
+            _victoryHandled = false;
+            
+            // Stop all ongoing coroutines safely
+            try
+            {
+                _boss.StopAllCoroutines();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"[BossDeathState] Error stopping coroutines: {e.Message}");
+            }
+            
+            // Disable boss AI but keep GameObject active for death animation
+            // Don't disable the entire GameObject yet!
+            
+            // TODO: Play death animation
         }
 
         public void Update()
         {
             _deathTime += Time.deltaTime;
-        
-            // After death animation completes (e.g., 2 seconds)
-            if (_deathTime >= 2f && !_deathHandled)
+            
+            // Wait for death animation to complete (2 seconds)
+            if (_deathTime >= 2f && !_victoryHandled)
             {
-                _deathHandled = true;
-            
-                // Handle death consequences
-                // - Drop artifacts
-                // - Show victory screen
-                // - Disable boss GameObject
-            
+                _victoryHandled = true;
+                
                 Debug.Log("[BossDeathState] Death sequence complete");
-            
-                // Optionally disable the boss
-                _boss.gameObject.SetActive(false);
+                
+                // Optionally hide boss after a delay
+                // You might want to keep it visible for the player to see
+                // _boss.gameObject.SetActive(false);
             }
         }
 

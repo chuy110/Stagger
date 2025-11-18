@@ -24,15 +24,15 @@ MonoBehaviour:
   Threads:
   - LimbName: Right Arm
     AttachmentPoint: {x: 1, y: 0.5}
-    IsIntact: 0
+    IsIntact: 1
     LinkedAttackIndices: 
   - LimbName: Left Arm
     AttachmentPoint: {x: -1, y: 0.5}
-    IsIntact: 0
+    IsIntact: 1
     LinkedAttackIndices: 
   - LimbName: Head
     AttachmentPoint: {x: 0, y: 1}
-    IsIntact: 0
+    IsIntact: 1
     LinkedAttackIndices: 
   ThreadBreakThresholds:
   - 75
@@ -43,9 +43,9 @@ MonoBehaviour:
     ProjectileData: {fileID: 11400000, guid: 539b4f1801823974e8275aea82dd9b2d, type: 2}
     ProjectileCount: 1
     SpreadAngle: 0
-    ProjectileDelay: 0
+    ProjectileDelay: 0.1
     AimAtPlayer: 1
-    FixedDirection: {x: 0, y: 0}
+    FixedDirection: {x: 0, y: -1}
     AttackAnimation: 
   EnrageThreshold: 30
   EnragedAttackInterval: 1

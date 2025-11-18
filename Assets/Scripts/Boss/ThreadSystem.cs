@@ -136,6 +136,8 @@ namespace Stagger.Boss
                     ? _ceilingAnchor.position 
                     : transform.position + Vector3.up * 5f;
                 
+                Debug.DrawLine(ceilingPoint, bossAttachment, Color.yellow);
+                
                 // Set line positions
                 _threadRenderers[i].SetPosition(0, ceilingPoint);
                 _threadRenderers[i].SetPosition(1, bossAttachment);
@@ -148,6 +150,9 @@ namespace Stagger.Boss
                 // Hide if broken
                 _threadRenderers[i].enabled = _threadStates[i];
             }
+            
+            
+            
         }
 
         /// <summary>
@@ -204,18 +209,26 @@ namespace Stagger.Boss
         private void QTESuccess()
         {
             Debug.Log($"[ThreadSystem] <color=green>QTE SUCCESS!</color> Thread {_currentQTEThreadIndex} severed!");
-            
+    
             BreakThread(_currentQTEThreadIndex);
             _isQTEActive = false;
             _currentQTEThreadIndex = -1;
-            
+    
             // Raise event (Observer pattern)
             OnQTESuccess?.Invoke();
-            
+    
             // Play thread break sound
             if (_bossData != null && _bossData.ThreadBreakSound != null)
             {
                 AudioSource.PlayClipAtPoint(_bossData.ThreadBreakSound, transform.position);
+            }
+    
+            // REMOVE BOSS INVULNERABILITY - boss can take damage again
+            BossHealth bossHealth = GetComponent<BossHealth>();
+            if (bossHealth != null)
+            {
+                bossHealth.SetInvulnerable(false);
+                Debug.Log("[ThreadSystem] Boss is now VULNERABLE - combat resumes!");
             }
         }
 
@@ -225,12 +238,16 @@ namespace Stagger.Boss
         private void QTEFailed()
         {
             Debug.Log($"[ThreadSystem] <color=red>QTE FAILED!</color> Thread {_currentQTEThreadIndex} still intact");
-            
+    
             _isQTEActive = false;
             _currentQTEThreadIndex = -1;
-            
+    
             // Raise event (Observer pattern)
             OnQTEFailed?.Invoke();
+    
+            // KEEP BOSS INVULNERABLE - player must try again
+            // Boss will retry the thread break attack
+            Debug.Log("[ThreadSystem] Boss remains invulnerable - retrying thread break attack!");
         }
 
         /// <summary>

@@ -263,6 +263,8 @@ namespace Stagger.Core.Managers
                     break;
             }
         }
+        
+        
 
         // Scene Loading Methods
 
@@ -318,4 +320,7 @@ namespace Stagger.Core.Managers
     {
         // This is a placeholder - full implementation will be in Boss scripts
     }
+    
+    
+    
 }

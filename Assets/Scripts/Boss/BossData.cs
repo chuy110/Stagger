@@ -112,6 +112,13 @@ namespace Stagger.Boss
         [Tooltip("Thread configuration for each limb")]
         public List<ThreadData> Threads = new List<ThreadData>();
         
+        [Header("Thread Break Attack")]
+        [Tooltip("Special attack used during thread break QTE")]
+        public AttackPattern ThreadBreakAttack;
+
+        [Tooltip("How long to wait before using thread break attack")]
+        public float ThreadBreakAttackDelay = 1f;
+        
         [Tooltip("HP percentages that trigger thread break QTE (e.g., 75%, 50%, 25%)")]
         public List<float> ThreadBreakThresholds = new List<float> { 75f, 50f, 25f };
 
