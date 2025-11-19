@@ -158,6 +158,7 @@ namespace Stagger.Boss
         /// <summary>
         /// Start a thread break QTE for a specific thread.
         /// </summary>
+        
         public void StartThreadBreakQTE(int threadIndex)
         {
             if (threadIndex < 0 || threadIndex >= _threadStates.Count)
@@ -177,8 +178,8 @@ namespace Stagger.Boss
             _currentQTEThreadIndex = threadIndex;
 
             Debug.Log($"[ThreadSystem] <color=yellow>THREAD BREAK QTE STARTED!</color> Thread {threadIndex} - Press {_qteKey}!");
-            
-            // Make thread flash or pulse to indicate QTE
+    
+            // Make thread flash to indicate QTE
             StartCoroutine(FlashThread(threadIndex));
         }
 
@@ -188,7 +189,7 @@ namespace Stagger.Boss
         private void UpdateQTE()
         {
             float elapsedTime = Time.time - _qteStartTime;
-            
+    
             // Check for input
             if (Input.GetKeyDown(_qteKey))
             {
@@ -223,12 +224,12 @@ namespace Stagger.Boss
                 AudioSource.PlayClipAtPoint(_bossData.ThreadBreakSound, transform.position);
             }
     
-            // REMOVE BOSS INVULNERABILITY - boss can take damage again
+            // REMOVE BOSS INVULNERABILITY - combat resumes
             BossHealth bossHealth = GetComponent<BossHealth>();
-            if (bossHealth != null)
+            if (bossHealth != null && !bossHealth.IsDead)
             {
                 bossHealth.SetInvulnerable(false);
-                Debug.Log("[ThreadSystem] Boss is now VULNERABLE - combat resumes!");
+                Debug.Log("[ThreadSystem] Boss vulnerability restored - combat resumes!");
             }
         }
 
@@ -245,9 +246,16 @@ namespace Stagger.Boss
             // Raise event (Observer pattern)
             OnQTEFailed?.Invoke();
     
-            // KEEP BOSS INVULNERABLE - player must try again
-            // Boss will retry the thread break attack
-            Debug.Log("[ThreadSystem] Boss remains invulnerable - retrying thread break attack!");
+            // CRITICAL FIX: Remove boss invulnerability
+            BossHealth bossHealth = GetComponent<BossHealth>();
+            if (bossHealth != null && !bossHealth.IsDead)
+            {
+                bossHealth.SetInvulnerable(false);
+                Debug.Log("[ThreadSystem] QTE failed - boss vulnerability restored, combat resumes");
+            }
+    
+            // Thread remains intact, will trigger again at next threshold
+            // OR if you want boss to attack again until player succeeds, implement retry logic
         }
 
         /// <summary>

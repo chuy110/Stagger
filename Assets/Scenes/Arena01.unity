@@ -1647,6 +1647,11 @@ MonoBehaviour:
   _projectilePoolKey: BossProjectile
   _projectilePrefab: {fileID: 0}
   _projectilePoolSize: 30
+  _executionRange: 3
+  _executionKey: 101
+  OnBossVictory:
+    m_PersistentCalls:
+      m_Calls: []
   _showDebugGizmos: 1
 --- !u!114 &1354569365
 MonoBehaviour:

@@ -32,6 +32,12 @@ namespace Stagger.Boss
         
         [Header("Debug")]
         [SerializeField] private bool _isInvulnerable = false;
+        
+        [ContextMenu("Debug: Check Invulnerability")]
+        private void DebugCheckInvulnerability()
+        {
+            Debug.Log($"[BossHealth] Invulnerable: {_isInvulnerable}, Dead: {_isDead}, HP: {_currentHealth}/{_maxHealth}");
+        }
 
         private float _currentHealth;
         private float _maxHealth;
@@ -180,24 +186,27 @@ namespace Stagger.Boss
         /// <summary>
         /// Kill the boss.
         /// </summary>
+        
         private void Die()
         {
             if (_isDead) return;
 
             _isDead = true;
             _currentHealth = 0f;
-            _isInvulnerable = false; // Remove invulnerability on death
+            _isInvulnerable = false;
 
-            Debug.Log($"[BossHealth] <color=red>{_bossData?.BossName ?? "Boss"} DEFEATED!</color>");
-
-            // Raise defeat event (Observer pattern)
-            OnBossDefeated?.Invoke();
-
-            // Play defeat sound
-            if (_bossData != null && _bossData.DefeatSound != null)
+            Debug.Log($"[BossHealth] DEFEATED!");
+    
+            // CRITICAL: Disable BossController immediately to stop projectiles
+            BossController controller = GetComponent<BossController>();
+            if (controller != null)
             {
-                AudioSource.PlayClipAtPoint(_bossData.DefeatSound, transform.position);
+                controller.enabled = false;
+                Debug.Log("[BossHealth] BossController disabled");
             }
+    
+            // Disable this component
+            enabled = false;
         }
 
         /// <summary>

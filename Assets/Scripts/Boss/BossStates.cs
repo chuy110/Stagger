@@ -69,23 +69,21 @@ namespace Stagger.Boss
 
         public void Update()
         {
-            // Don't transition if boss is dead
-            if (_boss.Health.IsDead)
-            {
-                return;
-            }
-            
-            // Don't attack if all threads are broken (waiting for execution)
-            if (_boss.ThreadSystem.AllThreadsBroken)
+            // Safe null check
+            if (_boss == null || _boss.Health == null || _boss.Health.IsDead)
             {
                 return;
             }
     
+            if (_boss.ThreadSystem != null && _boss.ThreadSystem.AllThreadsBroken)
+            {
+                return;
+            }
+
             _idleTime -= Time.deltaTime;
-    
+
             if (_idleTime <= 0f)
             {
-                // Transition to attacking
                 _boss.StateMachine.ChangeState(_boss.AttackingState);
             }
         }
@@ -129,20 +127,18 @@ namespace Stagger.Boss
 
         public void Update()
         {
-            // Don't attack if boss is dead
-            if (_boss.Health.IsDead)
+            // Safe null check
+            if (_boss == null || _boss.Health == null || _boss.Health.IsDead)
             {
                 return;
             }
-            
+    
             if (!_attackExecuted && _currentAttack != null)
             {
-                // Fire projectile
                 _boss.FireProjectile(_currentAttack);
                 _attackExecuted = true;
             }
-            
-            // Return to idle after attack
+    
             if (_attackExecuted)
             {
                 _boss.StateMachine.ChangeState(_boss.IdleState);
@@ -183,17 +179,16 @@ namespace Stagger.Boss
 
         public void Update()
         {
-            // Don't transition if boss is dead
-            if (_boss.Health.IsDead)
+            // Safe null check
+            if (_boss == null || _boss.Health == null || _boss.Health.IsDead)
             {
                 return;
             }
-            
+    
             _stunnedTime += Time.deltaTime;
-            
+    
             if (_stunnedTime >= _stunDuration)
             {
-                // Return to idle
                 _boss.StateMachine.ChangeState(_boss.IdleState);
             }
         }

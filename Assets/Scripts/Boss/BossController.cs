@@ -197,7 +197,8 @@ namespace Stagger.Boss
             if (_health != null)
             {
                 _health.OnThreadBreakThreshold.AddListener(TriggerThreadBreak);
-                _health.OnBossDefeated.AddListener(OnBossDefeated);
+                // Temporarily disabled to prevent freeze
+                // _health.OnBossDefeated.AddListener(OnBossDefeated);
             }
 
             // Initialize with boss data
@@ -213,25 +214,25 @@ namespace Stagger.Boss
 
         private void Update()
         {
-            // Don't update state machine if boss is dead
-            if (_health != null && _health.IsDead)
+            // Exit immediately if health component is disabled or null
+            if (_health == null || !_health.enabled)
             {
+                // Boss is dead, disable this component too
+                if (!enabled) return;
+                enabled = false;
+                Debug.Log("[BossController] Disabled due to boss death");
                 return;
             }
-            
-            // Check for execution input when all threads broken
-            if (_threadSystem != null && _threadSystem.AllThreadsBroken && !_health.IsDead)
+    
+            // Exit if dead flag is set
+            if (_health.IsDead)
             {
-                if (Input.GetKeyDown(_executionKey))
-                {
-                    TryExecute();
-                    return; // Don't update state machine during execution
-                }
+                enabled = false;
+                return;
             }
-    
+
             _stateMachine?.Update();
-    
-            // Check for enrage
+
             if (!_isEnraged && _health.HealthPercent <= _bossData.EnrageThreshold)
             {
                 Enrage();
@@ -240,11 +241,12 @@ namespace Stagger.Boss
 
         private void FixedUpdate()
         {
-            if (_health != null && _health.IsDead)
+            // Exit immediately if dead
+            if (_health == null || !_health.enabled || _health.IsDead)
             {
                 return;
             }
-            
+    
             _stateMachine?.FixedUpdate();
         }
         
@@ -294,6 +296,13 @@ namespace Stagger.Boss
         
         public void FireProjectile(AttackPattern pattern)
         {
+            // CRITICAL: Don't spawn if dead
+            if (_health == null || _health.IsDead)
+            {
+                Debug.Log("[BossController] FireProjectile blocked - boss is dead");
+                return;
+            }
+    
             if (pattern == null || pattern.ProjectileData == null)
             {
                 Debug.LogWarning("[BossController] Invalid attack pattern");
@@ -325,7 +334,7 @@ namespace Stagger.Boss
                 {
                     float angle = startAngle + (angleStep * i);
                     Vector2 direction = Quaternion.Euler(0, 0, angle) * baseDirection;
-                    
+            
                     if (pattern.ProjectileDelay > 0f)
                     {
                         StartCoroutine(DelayedSpawn(pattern.ProjectileData, spawnPos, direction, i * pattern.ProjectileDelay));
@@ -343,6 +352,18 @@ namespace Stagger.Boss
         
         private void SpawnProjectile(ProjectileData data, Vector3 position, Vector2 direction)
         {
+            // CRITICAL: Exit if health is null, disabled, or dead
+            if (_health == null || !_health.enabled || _health.IsDead)
+            {
+                return;
+            }
+    
+            // Safety check - don't spawn if this component is disabled
+            if (!enabled)
+            {
+                return;
+            }
+    
             Projectile projectile = SimplePoolManager.Instance.Spawn<Projectile>(_projectilePoolKey);
             if (projectile != null)
             {
@@ -354,6 +375,13 @@ namespace Stagger.Boss
         private IEnumerator DelayedSpawn(ProjectileData data, Vector3 position, Vector2 direction, float delay)
         {
             yield return new WaitForSeconds(delay);
+    
+            // Check if boss died during delay
+            if (_health == null || !_health.enabled || _health.IsDead || !enabled)
+            {
+                yield break; // Exit coroutine silently
+            }
+    
             SpawnProjectile(data, position, direction);
         }
         
@@ -455,12 +483,39 @@ namespace Stagger.Boss
         public void OnBossDefeated()
         {
             Debug.Log($"[BossController] {_bossData.BossName} has been defeated!");
-            
-            // Transition to death state
-            _stateMachine.ChangeState(_deathState);
-            
-            // Handle victory
-            HandleVictory();
+            Debug.Log("[BossController] <color=green>★★★ VICTORY! ★★★</color>");
+    
+            // Disable AI immediately - no state transitions
+            enabled = false;
+    
+            // Stop all coroutines safely
+            StopAllCoroutines();
+    
+            // Simple artifact drop (safe)
+            DropArtifactsSafe();
+    
+            // Don't call anything else - just stop
+        }
+
+// Safe artifact drop that can't freeze
+        private void DropArtifactsSafe()
+        {
+            if (_bossData == null || _bossData.PossibleDrops == null)
+            {
+                Debug.Log("[BossController] No artifacts to drop");
+                return;
+            }
+    
+            foreach (var drop in _bossData.PossibleDrops)
+            {
+                if (drop.ArtifactData == null) continue;
+        
+                float roll = Random.Range(0f, 1f);
+                if (roll <= drop.DropChance)
+                {
+                    Debug.Log($"[BossController] ARTIFACT: {drop.ArtifactData.name} (roll: {roll:F2})");
+                }
+            }
         }
 
         private void HandleVictory()
