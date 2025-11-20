@@ -125,9 +125,7 @@ namespace Stagger.Boss
         public AudioClip HitSound;
     }
 
-    /// <summary>
-    /// Artifact drop configuration with drop chance.
-    /// </summary>
+    // NEW: Artifact drop configuration
     [System.Serializable]
     public class ArtifactDrop
     {
@@ -138,91 +136,4 @@ namespace Stagger.Boss
         [Range(0f, 1f)]
         public float DropChance = 0.5f;
     }
-
-    /// <summary>
-    /// Example boss creation workflow in code.
-    /// This shows how to programmatically create boss data.
-    /// </summary>
-#if UNITY_EDITOR
-    public static class BossDataCreator
-    {
-        [UnityEditor.MenuItem("Stagger/Create Example Boss Data")]
-        public static void CreateExampleBoss()
-        {
-            // Create boss data asset
-            BossData boss = ScriptableObject.CreateInstance<BossData>();
-            
-            // Configure basic info
-            boss.BossName = "Puppet Master";
-            boss.Description = "The first puppet boss. Simple attack patterns.";
-            boss.MaxHealth = 1000f;
-            boss.ThreadCount = 3;
-            
-            // Configure thresholds
-            boss.ThreadBreakThresholds = new List<float> { 75f, 50f, 25f };
-            
-            // Configure threads
-            boss.Threads = new List<ThreadData>
-            {
-                new ThreadData 
-                { 
-                    LimbName = "Left Arm",
-                    AttachmentPoint = new Vector2(-1f, 0.5f)
-                },
-                new ThreadData 
-                { 
-                    LimbName = "Right Arm",
-                    AttachmentPoint = new Vector2(1f, 0.5f)
-                },
-                new ThreadData 
-                { 
-                    LimbName = "Head",
-                    AttachmentPoint = new Vector2(0f, 1f)
-                }
-            };
-            
-            // Configure a simple attack pattern
-            boss.AttackPatterns = new List<AttackPattern>
-            {
-                new AttackPattern
-                {
-                    PatternName = "Single Shot",
-                    ProjectileCount = 1,
-                    AimAtPlayer = true,
-                    ProjectileData = new ProjectileData
-                    {
-                        Speed = 8f,
-                        Damage = 10f,
-                        Size = 0.5f,
-                        Lifetime = 5f,
-                        CanBeReflected = true
-                    }
-                },
-                new AttackPattern
-                {
-                    PatternName = "Triple Spread",
-                    ProjectileCount = 3,
-                    AimAtPlayer = true,
-                    SpreadAngle = 30f,
-                    ProjectileData = new ProjectileData
-                    {
-                        Speed = 10f,
-                        Damage = 8f,
-                        Size = 0.4f,
-                        Lifetime = 5f,
-                        CanBeReflected = true
-                    }
-                }
-            };
-            
-            // Save asset
-            string path = "Assets/Data/Bosses/PuppetMaster.asset";
-            UnityEditor.AssetDatabase.CreateAsset(boss, path);
-            UnityEditor.AssetDatabase.SaveAssets();
-            
-            Debug.Log($"✓ Created example boss data at: {path}");
-            UnityEditor.Selection.activeObject = boss;
-        }
-    }
-#endif
 }

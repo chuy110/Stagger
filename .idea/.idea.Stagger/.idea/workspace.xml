@@ -6,11 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Boss/BossController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Boss/BossController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Artifacts/NewArtifact.asset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Artifacts/NewArtifact.asset.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Arena01.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Arena01.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Boss/BossData.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Boss/BossData.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Boss/BossHealth.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Boss/BossHealth.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Core/Managers/GameManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Core/Managers/GameManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Core/Managers/InputManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Core/Managers/InputManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Boss/TestBoss.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Boss/TestBoss.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -129,7 +129,7 @@
       <workItem from="1762619239548" duration="1819000" />
       <workItem from="1763081098363" duration="3983000" />
       <workItem from="1763459907490" duration="8192000" />
-      <workItem from="1763617445413" duration="4099000" />
+      <workItem from="1763617445413" duration="6490000" />
     </task>
     <task id="LOCAL-00001" summary="connected project to github">
       <option name="closed" value="true" />
