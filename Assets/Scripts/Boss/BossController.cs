@@ -6,6 +6,87 @@ using UnityEngine.Events;
 namespace Stagger.Boss
 {
     /// <summary>
+    /// Projectile component - attach to projectile prefab.
+    /// </summary>
+    public class Projectile : MonoBehaviour
+    {
+        private ProjectileData _data;
+        private Vector2 _direction;
+        private float _spawnTime;
+        private Rigidbody2D _rb;
+        private SpriteRenderer _spriteRenderer;
+
+        private void Awake()
+        {
+            _rb = GetComponent<Rigidbody2D>();
+            if (_rb == null)
+                _rb = gameObject.AddComponent<Rigidbody2D>();
+            
+            _spriteRenderer = GetComponent<SpriteRenderer>();
+            if (_spriteRenderer == null)
+                _spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
+        }
+
+        public void Initialize(ProjectileData data, Vector2 direction)
+        {
+            _data = data;
+            _direction = direction.normalized;
+            _spawnTime = Time.time;
+            
+            // Apply visuals
+            if (_spriteRenderer != null && data.ProjectileSprite != null)
+            {
+                _spriteRenderer.sprite = data.ProjectileSprite;
+                _spriteRenderer.color = data.ProjectileColor;
+            }
+            
+            transform.localScale = Vector3.one * data.Size;
+            
+            // Apply velocity
+            if (_rb != null)
+            {
+                _rb.linearVelocity = _direction * data.Speed;
+            }
+        }
+
+        public void OnSpawnFromPool()
+        {
+            _spawnTime = Time.time;
+        }
+
+        public void OnReturnToPool()
+        {
+            if (_rb != null)
+                _rb.linearVelocity = Vector2.zero;
+        }
+
+        private void Update()
+        {
+            // Check lifetime
+            if (Time.time - _spawnTime >= _data.Lifetime)
+            {
+                ReturnToPool();
+            }
+        }
+
+        private void OnTriggerEnter2D(Collider2D other)
+        {
+            // Handle collisions (player parry, walls, etc.)
+            if (other.CompareTag("Player"))
+            {
+                // Check if player is parrying
+                // If not, damage player
+                // If yes, reflect projectile
+            }
+        }
+
+        private void ReturnToPool()
+        {
+            SimplePoolManager.Instance.Despawn("BossProjectile", this);
+        }
+    }
+
+    /// <summary>
     /// Simple object pool manager (Singleton pattern).
     /// </summary>
     public class SimplePoolManager : MonoBehaviour
@@ -152,6 +233,7 @@ namespace Stagger.Boss
         private float _lastAttackTime;
         private int _currentAttackIndex = 0;
         private bool _isEnraged = false;
+        private bool _isDying = false; // NEW: Flag to prevent multiple death calls
 
         // Properties
         public BossData Data => _bossData;
@@ -197,8 +279,8 @@ namespace Stagger.Boss
             if (_health != null)
             {
                 _health.OnThreadBreakThreshold.AddListener(TriggerThreadBreak);
-                // Temporarily disabled to prevent freeze
-                // _health.OnBossDefeated.AddListener(OnBossDefeated);
+                // FIXED: Use simple death handler that doesn't cause loops
+                _health.OnBossDefeated.AddListener(HandleBossDeath);
             }
 
             // Initialize with boss data
@@ -214,10 +296,12 @@ namespace Stagger.Boss
 
         private void Update()
         {
+            // CRITICAL: Stop all updates if dying
+            if (_isDying) return;
+            
             // Exit immediately if health component is disabled or null
             if (_health == null || !_health.enabled)
             {
-                // Boss is dead, disable this component too
                 if (!enabled) return;
                 enabled = false;
                 Debug.Log("[BossController] Disabled due to boss death");
@@ -241,6 +325,9 @@ namespace Stagger.Boss
 
         private void FixedUpdate()
         {
+            // CRITICAL: Stop all updates if dying
+            if (_isDying) return;
+            
             // Exit immediately if dead
             if (_health == null || !_health.enabled || _health.IsDead)
             {
@@ -296,10 +383,10 @@ namespace Stagger.Boss
         
         public void FireProjectile(AttackPattern pattern)
         {
-            // CRITICAL: Don't spawn if dead
-            if (_health == null || _health.IsDead)
+            // CRITICAL: Don't spawn if dead or dying
+            if (_isDying || _health == null || _health.IsDead)
             {
-                Debug.Log("[BossController] FireProjectile blocked - boss is dead");
+                Debug.Log("[BossController] FireProjectile blocked - boss is dead/dying");
                 return;
             }
     
@@ -352,8 +439,8 @@ namespace Stagger.Boss
         
         private void SpawnProjectile(ProjectileData data, Vector3 position, Vector2 direction)
         {
-            // CRITICAL: Exit if health is null, disabled, or dead
-            if (_health == null || !_health.enabled || _health.IsDead)
+            // CRITICAL: Exit if dying, health is null, disabled, or dead
+            if (_isDying || _health == null || !_health.enabled || _health.IsDead)
             {
                 return;
             }
@@ -376,8 +463,8 @@ namespace Stagger.Boss
         {
             yield return new WaitForSeconds(delay);
     
-            // Check if boss died during delay
-            if (_health == null || !_health.enabled || _health.IsDead || !enabled)
+            // CRITICAL: Check if boss died/dying during delay
+            if (_isDying || _health == null || !_health.enabled || _health.IsDead || !enabled)
             {
                 yield break; // Exit coroutine silently
             }
@@ -480,24 +567,39 @@ namespace Stagger.Boss
             }
         }
 
-        public void OnBossDefeated()
+        /// <summary>
+        /// FIXED: Simple death handler that stops everything cleanly
+        /// </summary>
+        private void HandleBossDeath()
         {
+            // Prevent multiple calls
+            if (_isDying) return;
+            _isDying = true;
+
             Debug.Log($"[BossController] {_bossData.BossName} has been defeated!");
             Debug.Log("[BossController] <color=green>★★★ VICTORY! ★★★</color>");
     
-            // Disable AI immediately - no state transitions
-            enabled = false;
-    
-            // Stop all coroutines safely
+            // STEP 1: Stop all coroutines IMMEDIATELY (prevents delayed projectile spawns)
             StopAllCoroutines();
     
-            // Simple artifact drop (safe)
-            DropArtifactsSafe();
+            // STEP 2: Disable this component to stop Update/FixedUpdate
+            enabled = false;
     
-            // Don't call anything else - just stop
+            // STEP 3: Optional - play death animation
+            if (_animator != null)
+            {
+                _animator.SetTrigger("Death"); // If you have a death animation
+            }
+    
+            // STEP 4: Raise victory event (GameManager will handle artifacts and UI)
+            OnBossVictory?.Invoke();
+    
+            Debug.Log("[BossController] Death sequence complete - boss safely stopped");
         }
 
-// Safe artifact drop that can't freeze
+        /// <summary>
+        /// Safe artifact drop that can't freeze or cause issues
+        /// </summary>
         private void DropArtifactsSafe()
         {
             if (_bossData == null || _bossData.PossibleDrops == null)
@@ -506,6 +608,8 @@ namespace Stagger.Boss
                 return;
             }
     
+            Debug.Log("[BossController] Rolling for artifact drops...");
+            
             foreach (var drop in _bossData.PossibleDrops)
             {
                 if (drop.ArtifactData == null) continue;
@@ -513,50 +617,12 @@ namespace Stagger.Boss
                 float roll = Random.Range(0f, 1f);
                 if (roll <= drop.DropChance)
                 {
-                    Debug.Log($"[BossController] ARTIFACT: {drop.ArtifactData.name} (roll: {roll:F2})");
-                }
-            }
-        }
-
-        private void HandleVictory()
-        {
-            Debug.Log("[BossController] <color=green>★★★ VICTORY! ★★★</color>");
-            
-            // Raise victory event
-            OnBossVictory?.Invoke();
-            
-            // Drop artifacts
-            DropArtifacts();
-            
-            // TODO: Integrate with your game manager
-            // GameManager.Instance.ShowVictoryScreen();
-            // UIManager.Instance.OpenEquipmentMenu();
-            // SaveManager.Instance.SaveProgress();
-        }
-
-        private void DropArtifacts()
-        {
-            if (_bossData == null || _bossData.PossibleDrops == null || _bossData.PossibleDrops.Count == 0)
-            {
-                Debug.Log("[BossController] No artifacts configured to drop");
-                return;
-            }
-            
-            Debug.Log("[BossController] Rolling for artifact drops...");
-            
-            foreach (var drop in _bossData.PossibleDrops)
-            {
-                if (drop.ArtifactData == null) continue;
-                
-                float roll = Random.Range(0f, 1f);
-                
-                if (roll <= drop.DropChance)
-                {
-                    Debug.Log($"[BossController] <color=yellow>★ ARTIFACT DROPPED!</color> {drop.ArtifactData.name}");
+                    Debug.Log($"[BossController] <color=yellow>★ ARTIFACT DROPPED!</color> {drop.ArtifactData.name} (roll: {roll:F2})");
                     
-                    // TODO: Instantiate artifact pickup in world or add to inventory
-                    // Instantiate(artifactPickupPrefab, transform.position, Quaternion.identity);
+                    // TODO: Add to player inventory or spawn pickup
                     // PlayerInventory.Instance.AddArtifact(drop.ArtifactData);
+                    // OR
+                    // Instantiate(artifactPickupPrefab, transform.position, Quaternion.identity);
                 }
                 else
                 {
@@ -570,7 +636,7 @@ namespace Stagger.Boss
             if (_health != null)
             {
                 _health.OnThreadBreakThreshold.RemoveListener(TriggerThreadBreak);
-                _health.OnBossDefeated.RemoveListener(OnBossDefeated);
+                _health.OnBossDefeated.RemoveListener(HandleBossDeath);
             }
         }
 

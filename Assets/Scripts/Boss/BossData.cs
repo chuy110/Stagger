@@ -1,182 +1,228 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// NOTE: ProjectileData must be in the global namespace (no namespace wrapper)
-// or you need to add: using YourProjectileNamespace; if it has one
-
 namespace Stagger.Boss
 {
     /// <summary>
-    /// Configuration for a single thread attached to a boss limb.
+    /// Boss configuration data - Prototype pattern via ScriptableObject.
+    /// Create instances via: Right-click > Create > Stagger > Boss Data
+    /// </summary>
+    [CreateAssetMenu(fileName = "NewBoss", menuName = "Stagger/Boss Data")]
+    public class BossData : ScriptableObject
+    {
+        [Header("Basic Info")]
+        public string BossName = "Boss Name";
+        [TextArea(3, 5)]
+        public string Description = "Boss description";
+        public GameObject BossPrefab; // Prefab with BossController
+        
+        [Header("Visual")]
+        public Sprite BossSprite;
+        public RuntimeAnimatorController AnimatorController;
+        public float Scale = 1f;
+        
+        [Header("Stats")]
+        public float MaxHealth = 1000f;
+        public float EnrageThreshold = 30f; // Boss enrages at 30% HP
+        
+        [Header("Combat")]
+        public float AttackInterval = 2f; // Time between attacks (normal)
+        public float EnragedAttackInterval = 1f; // Time between attacks (enraged)
+        public float StunDuration = 0.5f; // How long boss is stunned after taking damage
+        
+        [Header("Thread System")]
+        public int ThreadCount = 3;
+        public List<float> ThreadBreakThresholds = new List<float> { 75f, 50f, 25f }; // HP % when threads break
+        public List<ThreadData> Threads = new List<ThreadData>();
+        public AudioClip ThreadBreakSound;
+        
+        [Header("Attack Patterns")]
+        public List<AttackPattern> AttackPatterns = new List<AttackPattern>();
+        
+        [Header("Loot")]
+        public List<ArtifactDrop> PossibleDrops = new List<ArtifactDrop>();
+
+        [ContextMenu("Validate Data")]
+        private void ValidateData()
+        {
+            Debug.Log($"=== {BossName} Configuration ===");
+            Debug.Log($"Max HP: {MaxHealth}");
+            Debug.Log($"Threads: {ThreadCount}");
+            Debug.Log($"Thresholds: {string.Join(", ", ThreadBreakThresholds)}");
+            Debug.Log($"Attack Patterns: {AttackPatterns.Count}");
+            Debug.Log($"Possible Drops: {PossibleDrops.Count}");
+            
+            // Validation
+            if (BossPrefab == null)
+                Debug.LogError("❌ Boss Prefab is missing!");
+            
+            if (ThreadBreakThresholds.Count != ThreadCount)
+                Debug.LogWarning($"⚠️ Thread count ({ThreadCount}) doesn't match thresholds ({ThreadBreakThresholds.Count})");
+            
+            if (AttackPatterns.Count == 0)
+                Debug.LogWarning("⚠️ No attack patterns configured!");
+                
+            Debug.Log("============================");
+        }
+    }
+
+    /// <summary>
+    /// Thread configuration for visual puppet strings.
     /// </summary>
     [System.Serializable]
     public class ThreadData
     {
-        [Tooltip("Name of the limb this thread is attached to")]
-        public string LimbName = "Right Arm";
-        
-        [Tooltip("Local position offset from boss center")]
-        public Vector2 AttachmentPoint = Vector2.right;
-        
-        [Tooltip("Is this thread currently intact?")]
-        public bool IsIntact = true;
-        
-        [Tooltip("Which attack patterns require this thread to be intact")]
-        public List<int> LinkedAttackIndices = new List<int>();
+        public string LimbName = "Limb"; // Which limb/attack this controls
+        public Vector2 AttachmentPoint = Vector2.zero; // Offset from boss center where thread attaches
+        public List<AttackPattern> LinkedAttacks = new List<AttackPattern>(); // Attacks disabled when thread breaks
     }
 
     /// <summary>
-    /// Defines an attack pattern for the boss.
+    /// Attack pattern configuration.
     /// </summary>
     [System.Serializable]
     public class AttackPattern
     {
-        [Tooltip("Name of this attack pattern")]
-        public string PatternName = "Basic Attack";
+        [Header("Identity")]
+        public string PatternName = "Attack";
+        public string AttackAnimation = ""; // Animation trigger name
         
-        [Tooltip("Projectile data to use - ProjectileData must be accessible (global namespace or with using statement)")]
+        [Header("Projectile")]
         public ProjectileData ProjectileData;
-        
-        [Tooltip("Number of projectiles in this pattern")]
         public int ProjectileCount = 1;
         
-        [Tooltip("Spread angle for multiple projectiles")]
-        public float SpreadAngle = 0f;
-        
-        [Tooltip("Delay between projectiles in the pattern")]
-        public float ProjectileDelay = 0.1f;
-        
-        [Tooltip("Target to aim at (usually player)")]
+        [Header("Targeting")]
         public bool AimAtPlayer = true;
+        public Vector2 FixedDirection = Vector2.down; // Used if not aiming at player
+        public float SpreadAngle = 0f; // Spread for multi-shot (degrees)
         
-        [Tooltip("Fixed direction if not aiming at player")]
-        public Vector2 FixedDirection = Vector2.down;
-        
-        [Tooltip("Animation to play when using this attack")]
-        public string AttackAnimation = "Boss_Attack";
+        [Header("Timing")]
+        public float ProjectileDelay = 0f; // Delay between each projectile in multi-shot
     }
 
     /// <summary>
-    /// Artifact drop configuration.
+    /// Projectile configuration data - could also be a ScriptableObject.
+    /// </summary>
+    [System.Serializable]
+    public class ProjectileData
+    {
+        [Header("Visual")]
+        public Sprite ProjectileSprite;
+        public Color ProjectileColor = Color.white;
+        public float Size = 1f;
+        
+        [Header("Movement")]
+        public float Speed = 10f;
+        public float Lifetime = 5f;
+        
+        [Header("Behavior")]
+        public bool CanBeReflected = true;
+        public float Damage = 10f;
+        
+        [Header("Effects")]
+        public GameObject HitEffectPrefab;
+        public AudioClip FireSound;
+        public AudioClip HitSound;
+    }
+
+    /// <summary>
+    /// Artifact drop configuration with drop chance.
     /// </summary>
     [System.Serializable]
     public class ArtifactDrop
     {
-        [Tooltip("Artifact data (will be implemented in Phase 8)")]
-        public ScriptableObject ArtifactData; // Placeholder for now
+        [Tooltip("The artifact that can drop")]
+        public Stagger.UI.ArtifactData ArtifactData;
         
-        [Tooltip("Drop chance (0-1)")]
+        [Tooltip("Chance to drop (0.0 = never, 1.0 = always)")]
         [Range(0f, 1f)]
         public float DropChance = 0.5f;
     }
 
     /// <summary>
-    /// ScriptableObject defining boss configuration (Prototype pattern).
-    /// Create instances via Assets > Create > Stagger > Boss > Boss Data
+    /// Example boss creation workflow in code.
+    /// This shows how to programmatically create boss data.
     /// </summary>
-    [CreateAssetMenu(fileName = "New Boss", menuName = "Stagger/Boss/Boss Data")]
-    public class BossData : ScriptableObject
+#if UNITY_EDITOR
+    public static class BossDataCreator
     {
-        [Header("Identity")]
-        [Tooltip("Name of this boss")]
-        public string BossName = "Puppet Boss";
-        
-        [Tooltip("Description or lore")]
-        [TextArea(3, 5)]
-        public string Description;
-
-        [Header("Visuals")]
-        [Tooltip("Boss sprite/visual representation")]
-        public Sprite BossSprite;
-        
-        [Tooltip("Animator controller for boss animations")]
-        public RuntimeAnimatorController AnimatorController;
-        
-        [Tooltip("Scale of the boss")]
-        public float Scale = 2f;
-
-        [Header("Stats")]
-        [Tooltip("Maximum health points")]
-        public float MaxHealth = 100f;
-        
-        [Tooltip("Time between attacks (seconds)")]
-        public float AttackInterval = 2f;
-        
-        [Tooltip("Time boss is stunned after taking damage")]
-        public float StunDuration = 0.5f;
-
-        [Header("Threads")]
-        [Tooltip("Number of threads attached to boss limbs")]
-        public int ThreadCount = 5;
-        
-        [Tooltip("Thread configuration for each limb")]
-        public List<ThreadData> Threads = new List<ThreadData>();
-        
-        [Header("Thread Break Attack")]
-        [Tooltip("Special attack used during thread break QTE")]
-        public AttackPattern ThreadBreakAttack;
-
-        [Tooltip("How long to wait before using thread break attack")]
-        public float ThreadBreakAttackDelay = 1f;
-        
-        [Tooltip("HP percentages that trigger thread break QTE (e.g., 75%, 50%, 25%)")]
-        public List<float> ThreadBreakThresholds = new List<float> { 75f, 50f, 25f };
-
-        [Header("Attack Patterns")]
-        [Tooltip("List of attack patterns this boss can use")]
-        public List<AttackPattern> AttackPatterns = new List<AttackPattern>();
-        
-        [Tooltip("Boss becomes more aggressive when below this HP%")]
-        public float EnrageThreshold = 30f;
-        
-        [Tooltip("Attack interval when enraged")]
-        public float EnragedAttackInterval = 1f;
-
-        [Header("Drops")]
-        [Tooltip("Artifacts this boss can drop on defeat")]
-        public List<ArtifactDrop> PossibleDrops = new List<ArtifactDrop>();
-
-        [Header("Audio")]
-        [Tooltip("Music that plays during this boss fight")]
-        public AudioClip BossMusic;
-        
-        [Tooltip("Sound when boss takes damage")]
-        public AudioClip HitSound;
-        
-        [Tooltip("Sound when thread breaks")]
-        public AudioClip ThreadBreakSound;
-        
-        [Tooltip("Sound when boss is defeated")]
-        public AudioClip DefeatSound;
-
-        /// <summary>
-        /// Clone this boss data (Prototype pattern).
-        /// </summary>
-        public BossData Clone()
+        [UnityEditor.MenuItem("Stagger/Create Example Boss Data")]
+        public static void CreateExampleBoss()
         {
-            BossData clone = CreateInstance<BossData>();
+            // Create boss data asset
+            BossData boss = ScriptableObject.CreateInstance<BossData>();
             
-            clone.BossName = BossName;
-            clone.Description = Description;
-            clone.BossSprite = BossSprite;
-            clone.AnimatorController = AnimatorController;
-            clone.Scale = Scale;
-            clone.MaxHealth = MaxHealth;
-            clone.AttackInterval = AttackInterval;
-            clone.StunDuration = StunDuration;
-            clone.ThreadCount = ThreadCount;
-            clone.Threads = new List<ThreadData>(Threads);
-            clone.ThreadBreakThresholds = new List<float>(ThreadBreakThresholds);
-            clone.AttackPatterns = new List<AttackPattern>(AttackPatterns);
-            clone.EnrageThreshold = EnrageThreshold;
-            clone.EnragedAttackInterval = EnragedAttackInterval;
-            clone.PossibleDrops = new List<ArtifactDrop>(PossibleDrops);
-            clone.BossMusic = BossMusic;
-            clone.HitSound = HitSound;
-            clone.ThreadBreakSound = ThreadBreakSound;
-            clone.DefeatSound = DefeatSound;
+            // Configure basic info
+            boss.BossName = "Puppet Master";
+            boss.Description = "The first puppet boss. Simple attack patterns.";
+            boss.MaxHealth = 1000f;
+            boss.ThreadCount = 3;
             
-            return clone;
+            // Configure thresholds
+            boss.ThreadBreakThresholds = new List<float> { 75f, 50f, 25f };
+            
+            // Configure threads
+            boss.Threads = new List<ThreadData>
+            {
+                new ThreadData 
+                { 
+                    LimbName = "Left Arm",
+                    AttachmentPoint = new Vector2(-1f, 0.5f)
+                },
+                new ThreadData 
+                { 
+                    LimbName = "Right Arm",
+                    AttachmentPoint = new Vector2(1f, 0.5f)
+                },
+                new ThreadData 
+                { 
+                    LimbName = "Head",
+                    AttachmentPoint = new Vector2(0f, 1f)
+                }
+            };
+            
+            // Configure a simple attack pattern
+            boss.AttackPatterns = new List<AttackPattern>
+            {
+                new AttackPattern
+                {
+                    PatternName = "Single Shot",
+                    ProjectileCount = 1,
+                    AimAtPlayer = true,
+                    ProjectileData = new ProjectileData
+                    {
+                        Speed = 8f,
+                        Damage = 10f,
+                        Size = 0.5f,
+                        Lifetime = 5f,
+                        CanBeReflected = true
+                    }
+                },
+                new AttackPattern
+                {
+                    PatternName = "Triple Spread",
+                    ProjectileCount = 3,
+                    AimAtPlayer = true,
+                    SpreadAngle = 30f,
+                    ProjectileData = new ProjectileData
+                    {
+                        Speed = 10f,
+                        Damage = 8f,
+                        Size = 0.4f,
+                        Lifetime = 5f,
+                        CanBeReflected = true
+                    }
+                }
+            };
+            
+            // Save asset
+            string path = "Assets/Data/Bosses/PuppetMaster.asset";
+            UnityEditor.AssetDatabase.CreateAsset(boss, path);
+            UnityEditor.AssetDatabase.SaveAssets();
+            
+            Debug.Log($"✓ Created example boss data at: {path}");
+            UnityEditor.Selection.activeObject = boss;
         }
     }
+#endif
 }

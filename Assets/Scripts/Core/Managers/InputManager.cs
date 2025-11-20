@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Stagger.Core.Commands;
+using Stagger.Core.Managers;  // ← ADD THIS for GameManager
+using Stagger.UI;              // ← ADD THIS for UIManager
+using Stagger.Boss;            // ← ADD THIS for BossData
 
 namespace Stagger.Core.Managers
 {
@@ -14,6 +17,7 @@ namespace Stagger.Core.Managers
         [Header("Input Settings")]
         [SerializeField] private float _inputBufferTime = 0.2f; // Time to buffer inputs
         [SerializeField] private bool _enableInputBuffering = true;
+        [SerializeField] private KeyCode _pauseKey = KeyCode.Escape;
 
         [Header("Debug")]
         [SerializeField] private bool _logInputs = false;
@@ -65,6 +69,7 @@ namespace Stagger.Core.Managers
             if (_inputEnabled && _enableInputBuffering)
             {
                 // Execute buffered commands each frame
+                HandlePauseInput();
                 _commandInvoker.ExecuteAll();
             }
         }
@@ -96,8 +101,7 @@ namespace Stagger.Core.Managers
             // Execute
             _playerInput.Player.Execute.performed += OnExecutePerformed;
 
-            // Pause
-            _playerInput.Player.Pause.performed += OnPausePerformed;
+            // Pause - removed binding, handled in Update()
         }
 
         // Input Callbacks
@@ -214,20 +218,79 @@ namespace Stagger.Core.Managers
                 executeCommand.Execute();
         }
 
-        private void OnPausePerformed(InputAction.CallbackContext context)
+        private void HandlePauseInput()
         {
-            if (_logInputs)
-                Debug.Log("[InputManager] Pause");
+            if (!Input.GetKeyDown(_pauseKey)) return;
 
-            // Pause doesn't use commands - directly interact with GameManager
-            if (GameManager.Instance.CurrentState == GameManager.GameState.Combat)
+            // Safety checks
+            if (GameManager.Instance == null)
             {
-                GameManager.Instance.PauseGame();
+                Debug.LogWarning("[InputManager] GameManager not found!");
+                return;
             }
-            else if (GameManager.Instance.CurrentState == GameManager.GameState.Paused)
+
+            if (UIManager.Instance == null)
             {
-                GameManager.Instance.ResumeGame();
+                Debug.LogWarning("[InputManager] UIManager not found!");
+                return;
             }
+
+            // Get current game state
+            GameManager.GameState currentState = GameManager.Instance.CurrentState;
+
+            switch (currentState)
+            {
+                case GameManager.GameState.Combat:
+                    // Pause the game
+                    PauseGame();
+                    break;
+
+                case GameManager.GameState.Paused:
+                    // Resume the game
+                    ResumeGame();
+                    break;
+
+                default:
+                    // Don't allow pause in other states (menu, results, equipment)
+                    Debug.Log($"[InputManager] Cannot pause in state: {currentState}");
+                    break;
+            }
+        }
+        
+        private void PauseGame()
+        {
+            Debug.Log("[InputManager] Pausing game");
+            UIManager.Instance.ShowPauseScreen();
+        }
+        
+        private void ResumeGame()
+        {
+            Debug.Log("[InputManager] Resuming game");
+            
+            // Get current boss name to pass to HUD
+            string bossName = GetCurrentBossName();
+            
+            // Show HUD (will also unpause via UIManager)
+            UIManager.Instance.ShowHUD(bossName);
+        }
+
+        /// <summary>
+        /// Get the current boss name for HUD display.
+        /// </summary>
+        private string GetCurrentBossName()
+        {
+            // Try to get from GameManager
+            if (GameManager.Instance != null)
+            {
+                BossData currentBoss = GameManager.Instance.GetCurrentBossData();
+                if (currentBoss != null)
+                {
+                    return currentBoss.BossName;
+                }
+            }
+
+            // Fallback
+            return "Boss";
         }
 
         // Public API
@@ -271,7 +334,15 @@ namespace Stagger.Core.Managers
         /// </summary>
         public float GetMovementInput()
         {
-            return _playerInput.Player.Move.ReadValue<float>();
+            try
+            {
+                return _playerInput.Player.Move.ReadValue<float>();
+            }
+            catch
+            {
+                Vector2 vec = _playerInput.Player.Move.ReadValue<Vector2>();
+                return vec.x;
+            }
         }
 
         protected override void OnDestroyed()
@@ -285,7 +356,6 @@ namespace Stagger.Core.Managers
                 _playerInput.Player.Parry.performed -= OnParryPerformed;
                 _playerInput.Player.Dodge.performed -= OnDodgePerformed;
                 _playerInput.Player.Execute.performed -= OnExecutePerformed;
-                _playerInput.Player.Pause.performed -= OnPausePerformed;
 
                 _playerInput.Dispose();
             }

@@ -44,6 +44,7 @@ namespace Stagger.Boss
         private int _nextThresholdIndex = 0;
         private bool _isDead = false;
         private bool _allThreadsBroken = false;
+        private bool _deathTriggered = false; // NEW: Prevent multiple death triggers
 
         // Properties
         public BossData Data => _bossData;
@@ -61,6 +62,7 @@ namespace Stagger.Boss
             _nextThresholdIndex = 0;
             _isDead = false;
             _allThreadsBroken = false;
+            _deathTriggered = false; // RESET
             
             Debug.Log($"[BossHealth] Initialized: {bossData.BossName}, HP: {_currentHealth}/{_maxHealth}");
             
@@ -74,7 +76,7 @@ namespace Stagger.Boss
         /// </summary>
         public void TakeDamage(float damage)
         {
-            // CRITICAL: Allow death even if invulnerable
+            // CRITICAL: Allow death even if invulnerable (for execution)
             if (_isDead)
             {
                 Debug.Log("[BossHealth] Already dead, ignoring damage");
@@ -185,28 +187,27 @@ namespace Stagger.Boss
 
         /// <summary>
         /// Kill the boss.
+        /// FIXED: Simplified to just set flags and trigger event once
         /// </summary>
-        
         private void Die()
         {
-            if (_isDead) return;
+            // CRITICAL: Prevent multiple death triggers
+            if (_deathTriggered) return;
+            _deathTriggered = true;
 
             _isDead = true;
             _currentHealth = 0f;
             _isInvulnerable = false;
 
             Debug.Log($"[BossHealth] DEFEATED!");
-    
-            // CRITICAL: Disable BossController immediately to stop projectiles
-            BossController controller = GetComponent<BossController>();
-            if (controller != null)
-            {
-                controller.enabled = false;
-                Debug.Log("[BossHealth] BossController disabled");
-            }
-    
-            // Disable this component
+            
+            // Trigger death event ONCE
+            OnBossDefeated?.Invoke();
+            
+            // CRITICAL: Disable this component to stop taking damage
             enabled = false;
+            
+            Debug.Log("[BossHealth] Component disabled - boss is dead");
         }
 
         /// <summary>
