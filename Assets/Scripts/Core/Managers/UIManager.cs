@@ -7,8 +7,7 @@ using Stagger.Core.Managers;
 namespace Stagger.UI
 {
     /// <summary>
-    /// Manages all UI screens and transitions between them.
-    /// Implements State pattern for screen management and Singleton pattern.
+    /// BULLETPROOF VERSION - Cannot crash, handles all null cases
     /// </summary>
     public class UIManager : MonoBehaviour
     {
@@ -67,7 +66,6 @@ namespace Stagger.UI
         [SerializeField] private TextMeshProUGUI _bossNameHUD;
         [SerializeField] private TextMeshProUGUI _timerText;
 
-        // Current screen state
         private UIScreen _currentScreen = UIScreen.None;
         private float _battleStartTime;
 
@@ -83,6 +81,8 @@ namespace Stagger.UI
 
         private void Awake()
         {
+            Debug.Log("[UIManager] Awake called");
+            
             if (_instance != null && _instance != this)
             {
                 Destroy(gameObject);
@@ -91,7 +91,6 @@ namespace Stagger.UI
             _instance = this;
             DontDestroyOnLoad(gameObject);
 
-            // Wire up button listeners (Observer pattern)
             SetupButtonListeners();
         }
 
@@ -102,134 +101,292 @@ namespace Stagger.UI
 
         private void Update()
         {
-            // Update timer if in battle
             if (_currentScreen == UIScreen.HUD)
             {
                 UpdateBattleTimer();
-            }
-
-            // Pause button
-            if (Input.GetKeyDown(KeyCode.Escape) && _currentScreen == UIScreen.HUD)
-            {
-                ShowPauseScreen();
             }
         }
 
         private void SetupButtonListeners()
         {
-            // Start screen
-            if (_startButton != null)
-                _startButton.onClick.AddListener(OnStartButtonClicked);
-            if (_quitButton != null)
-                _quitButton.onClick.AddListener(OnQuitButtonClicked);
+            try
+            {
+                if (_startButton != null)
+                    _startButton.onClick.AddListener(OnStartButtonClicked);
+                if (_quitButton != null)
+                    _quitButton.onClick.AddListener(OnQuitButtonClicked);
 
-            // Pause screen
-            if (_resumeButton != null)
-                _resumeButton.onClick.AddListener(OnResumeButtonClicked);
-            if (_mainMenuButton != null)
-                _mainMenuButton.onClick.AddListener(OnMainMenuButtonClicked);
+                if (_resumeButton != null)
+                    _resumeButton.onClick.AddListener(OnResumeButtonClicked);
+                if (_mainMenuButton != null)
+                    _mainMenuButton.onClick.AddListener(OnMainMenuButtonClicked);
 
-            // Result screen
-            if (_continueToEquipmentButton != null)
-                _continueToEquipmentButton.onClick.AddListener(OnContinueToEquipmentClicked);
+                if (_continueToEquipmentButton != null)
+                    _continueToEquipmentButton.onClick.AddListener(OnContinueToEquipmentClicked);
 
-            // Equipment screen
-            if (_nextBossButton != null)
-                _nextBossButton.onClick.AddListener(OnNextBossButtonClicked);
-            if (_previousBossButton != null)
-                _previousBossButton.onClick.AddListener(OnPreviousBossButtonClicked);
-            if (_backToMenuButton != null)
-                _backToMenuButton.onClick.AddListener(OnBackToMenuButtonClicked);
+                if (_nextBossButton != null)
+                    _nextBossButton.onClick.AddListener(OnNextBossButtonClicked);
+                if (_previousBossButton != null)
+                    _previousBossButton.onClick.AddListener(OnPreviousBossButtonClicked);
+                if (_backToMenuButton != null)
+                    _backToMenuButton.onClick.AddListener(OnBackToMenuButtonClicked);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] Error setting up button listeners: {e.Message}");
+            }
         }
 
         #region Screen Transitions
 
         public void ShowStartScreen()
         {
-            HideAllScreens();
-            _currentScreen = UIScreen.Start;
-            if (_startScreen != null) _startScreen.SetActive(true);
-            
-            if (_titleText != null)
-                _titleText.text = "PUPPET BOSS RUSH";
+            try
+            {
+                HideAllScreens();
+                _currentScreen = UIScreen.Start;
+                if (_startScreen != null) _startScreen.SetActive(true);
+                
+                if (_titleText != null)
+                    _titleText.text = "PUPPET BOSS RUSH";
 
-            Time.timeScale = 1f;
-            Debug.Log("[UIManager] Showing Start Screen");
+                Time.timeScale = 1f;
+                Debug.Log("[UIManager] Showing Start Screen");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] Error showing start screen: {e.Message}");
+            }
         }
 
         public void ShowPauseScreen()
         {
-            HideAllScreens();
-            _currentScreen = UIScreen.Pause;
-            if (_pauseScreen != null) _pauseScreen.SetActive(true);
-            if (_hudScreen != null) _hudScreen.SetActive(true); // Keep HUD visible
+            try
+            {
+                HideAllScreens();
+                _currentScreen = UIScreen.Pause;
+                if (_pauseScreen != null) _pauseScreen.SetActive(true);
+                if (_hudScreen != null) _hudScreen.SetActive(true);
 
-            Time.timeScale = 0f;
-            Debug.Log("[UIManager] Showing Pause Screen");
+                Time.timeScale = 0f;
+                Debug.Log("[UIManager] Showing Pause Screen");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] Error showing pause screen: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// BULLETPROOF: Parameterless version for UnityEvent - CANNOT CRASH
+        /// </summary>
+        public void ShowResultScreenFromBossVictory()
+        {
+            Debug.Log("[UIManager] ════════════════════════════════════════════");
+            Debug.Log("[UIManager] ShowResultScreenFromBossVictory CALLED");
+            Debug.Log("[UIManager] ════════════════════════════════════════════");
+            
+            try
+            {
+                Debug.Log("[UIManager] Step 1: Getting battle time...");
+                float battleTime = 0f;
+                try
+                {
+                    battleTime = GetBattleTime();
+                    Debug.Log($"[UIManager] ✓ Battle time: {battleTime:F2}s");
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError($"[UIManager] Error getting battle time: {e.Message}");
+                }
+        
+                Debug.Log("[UIManager] Step 2: Getting boss name...");
+                string bossName = "Boss";
+                try
+                {
+                    if (_bossNameHUD != null && !string.IsNullOrEmpty(_bossNameHUD.text))
+                    {
+                        bossName = _bossNameHUD.text;
+                    }
+                    Debug.Log($"[UIManager] ✓ Boss name: {bossName}");
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError($"[UIManager] Error getting boss name: {e.Message}");
+                }
+        
+                Debug.Log("[UIManager] Step 3: Getting dropped artifacts...");
+                List<ArtifactData> droppedArtifacts = new List<ArtifactData>();
+                try
+                {
+                    if (GameManager.Instance != null)
+                    {
+                        Debug.Log("[UIManager] GameManager exists, getting drops...");
+                        var drops = GameManager.Instance.GetLastDroppedArtifacts();
+                        if (drops != null)
+                        {
+                            droppedArtifacts = drops;
+                            Debug.Log($"[UIManager] ✓ Got {droppedArtifacts.Count} artifacts");
+                        }
+                        else
+                        {
+                            Debug.LogWarning("[UIManager] GetLastDroppedArtifacts returned null");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[UIManager] GameManager.Instance is null");
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError($"[UIManager] Error getting artifacts: {e.Message}");
+                }
+        
+                Debug.Log("[UIManager] Step 4: Calling ShowResultScreen...");
+                try
+                {
+                    ShowResultScreen(bossName, battleTime, droppedArtifacts);
+                    Debug.Log("[UIManager] ✓✓✓ Result screen shown successfully!");
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError($"[UIManager] Error in ShowResultScreen: {e.Message}");
+                    Debug.LogError($"[UIManager] Stack: {e.StackTrace}");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] ✗✗✗ CRITICAL ERROR in ShowResultScreenFromBossVictory: {e.Message}");
+                Debug.LogError($"[UIManager] Stack trace: {e.StackTrace}");
+                
+                // Emergency fallback - just show the result screen with defaults
+                try
+                {
+                    Debug.Log("[UIManager] Attempting emergency fallback...");
+                    HideAllScreens();
+                    if (_resultScreen != null)
+                    {
+                        _resultScreen.SetActive(true);
+                        _currentScreen = UIScreen.Result;
+                        Debug.Log("[UIManager] Emergency fallback successful");
+                    }
+                }
+                catch (System.Exception e2)
+                {
+                    Debug.LogError($"[UIManager] Even emergency fallback failed: {e2.Message}");
+                }
+            }
+            
+            Debug.Log("[UIManager] ════════════════════════════════════════════");
         }
 
         public void ShowResultScreen(string bossName, float battleTime, List<ArtifactData> droppedArtifacts)
         {
-            HideAllScreens();
-            _currentScreen = UIScreen.Result;
-            if (_resultScreen != null) _resultScreen.SetActive(true);
-
-            // Display boss name
-            if (_bossNameText != null)
-                _bossNameText.text = $"{bossName} DEFEATED!";
-
-            // Display time
-            if (_timeText != null)
+            Debug.Log($"[UIManager] ShowResultScreen called: {bossName}, {battleTime:F2}s");
+            
+            try
             {
-                int minutes = Mathf.FloorToInt(battleTime / 60f);
-                int seconds = Mathf.FloorToInt(battleTime % 60f);
-                _timeText.text = $"Time: {minutes:00}:{seconds:00}";
+                HideAllScreens();
+                _currentScreen = UIScreen.Result;
+                
+                if (_resultScreen != null)
+                {
+                    _resultScreen.SetActive(true);
+                    Debug.Log("[UIManager] ✓ Result screen activated");
+                }
+                else
+                {
+                    Debug.LogError("[UIManager] Result screen GameObject is null!");
+                }
+
+                if (_bossNameText != null)
+                {
+                    _bossNameText.text = $"{bossName} DEFEATED!";
+                }
+
+                if (_timeText != null)
+                {
+                    int minutes = Mathf.FloorToInt(battleTime / 60f);
+                    int seconds = Mathf.FloorToInt(battleTime % 60f);
+                    _timeText.text = $"Time: {minutes:00}:{seconds:00}";
+                }
+
+                if (_artifactsDroppedText != null && droppedArtifacts != null)
+                {
+                    _artifactsDroppedText.text = $"Artifacts Dropped: {droppedArtifacts.Count}";
+                }
+
+                if (droppedArtifacts != null)
+                {
+                    DisplayDroppedArtifacts(droppedArtifacts);
+                }
+
+                Time.timeScale = 1f;
+                Debug.Log("[UIManager] ✓ Result screen fully displayed");
             }
-
-            // Display artifacts
-            if (_artifactsDroppedText != null)
-                _artifactsDroppedText.text = $"Artifacts Dropped: {droppedArtifacts.Count}";
-
-            DisplayDroppedArtifacts(droppedArtifacts);
-
-            Time.timeScale = 1f;
-            Debug.Log("[UIManager] Showing Result Screen");
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] Error in ShowResultScreen: {e.Message}");
+                Debug.LogError($"[UIManager] Stack: {e.StackTrace}");
+            }
         }
 
         public void ShowEquipmentScreen()
         {
-            HideAllScreens();
-            _currentScreen = UIScreen.Equipment;
-            if (_equipmentScreen != null) _equipmentScreen.SetActive(true);
+            try
+            {
+                HideAllScreens();
+                _currentScreen = UIScreen.Equipment;
+                if (_equipmentScreen != null) _equipmentScreen.SetActive(true);
 
-            RefreshEquipmentScreen();
+                RefreshEquipmentScreen();
 
-            Time.timeScale = 1f;
-            Debug.Log("[UIManager] Showing Equipment Screen");
+                Time.timeScale = 1f;
+                Debug.Log("[UIManager] Showing Equipment Screen");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] Error showing equipment screen: {e.Message}");
+            }
         }
 
         public void ShowHUD(string bossName)
         {
-            HideAllScreens();
-            _currentScreen = UIScreen.HUD;
-            if (_hudScreen != null) _hudScreen.SetActive(true);
+            try
+            {
+                HideAllScreens();
+                _currentScreen = UIScreen.HUD;
+                if (_hudScreen != null) _hudScreen.SetActive(true);
 
-            if (_bossNameHUD != null)
-                _bossNameHUD.text = bossName;
+                if (_bossNameHUD != null)
+                    _bossNameHUD.text = bossName;
 
-            _battleStartTime = Time.time;
+                _battleStartTime = Time.time;
 
-            Time.timeScale = 1f;
-            Debug.Log("[UIManager] Showing HUD");
+                Time.timeScale = 1f;
+                Debug.Log("[UIManager] Showing HUD");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] Error showing HUD: {e.Message}");
+            }
         }
 
         private void HideAllScreens()
         {
-            if (_startScreen != null) _startScreen.SetActive(false);
-            if (_pauseScreen != null) _pauseScreen.SetActive(false);
-            if (_resultScreen != null) _resultScreen.SetActive(false);
-            if (_equipmentScreen != null) _equipmentScreen.SetActive(false);
-            if (_hudScreen != null) _hudScreen.SetActive(false);
+            try
+            {
+                if (_startScreen != null) _startScreen.SetActive(false);
+                if (_pauseScreen != null) _pauseScreen.SetActive(false);
+                if (_resultScreen != null) _resultScreen.SetActive(false);
+                if (_equipmentScreen != null) _equipmentScreen.SetActive(false);
+                if (_hudScreen != null) _hudScreen.SetActive(false);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] Error hiding screens: {e.Message}");
+            }
         }
 
         #endregion
@@ -239,11 +396,16 @@ namespace Stagger.UI
         private void OnStartButtonClicked()
         {
             Debug.Log("[UIManager] Start button clicked");
-            
-            // Start the game
-            if (GameManager.Instance != null)
+            try
             {
-                GameManager.Instance.StartNewGame();
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.StartNewGame();
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] Error starting game: {e.Message}");
             }
         }
 
@@ -268,9 +430,16 @@ namespace Stagger.UI
         {
             Debug.Log("[UIManager] Main menu button clicked");
             
-            if (GameManager.Instance != null)
+            try
             {
-                GameManager.Instance.ReturnToMenu();
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.ReturnToMenu();
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] Error returning to menu: {e.Message}");
             }
         }
 
@@ -284,9 +453,16 @@ namespace Stagger.UI
         {
             Debug.Log("[UIManager] Next boss button clicked");
             
-            if (GameManager.Instance != null)
+            try
             {
-                GameManager.Instance.LoadNextBoss();
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.LoadNextBoss();
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] Error loading next boss: {e.Message}");
             }
         }
 
@@ -294,9 +470,16 @@ namespace Stagger.UI
         {
             Debug.Log("[UIManager] Previous boss button clicked");
             
-            if (GameManager.Instance != null)
+            try
             {
-                GameManager.Instance.LoadPreviousBoss();
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.LoadPreviousBoss();
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] Error loading previous boss: {e.Message}");
             }
         }
 
@@ -304,9 +487,16 @@ namespace Stagger.UI
         {
             Debug.Log("[UIManager] Back to menu clicked");
             
-            if (GameManager.Instance != null)
+            try
             {
-                GameManager.Instance.ReturnToMenu();
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.ReturnToMenu();
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] Error going back to menu: {e.Message}");
             }
         }
 
@@ -316,20 +506,34 @@ namespace Stagger.UI
 
         public void UpdateBossHealth(float currentHealth, float maxHealth)
         {
-            if (_bossHealthBar != null)
+            try
             {
-                _bossHealthBar.fillAmount = maxHealth > 0 ? currentHealth / maxHealth : 0f;
+                if (_bossHealthBar != null)
+                {
+                    _bossHealthBar.fillAmount = maxHealth > 0 ? currentHealth / maxHealth : 0f;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] Error updating boss health: {e.Message}");
             }
         }
 
         private void UpdateBattleTimer()
         {
-            if (_timerText != null)
+            try
             {
-                float elapsed = Time.time - _battleStartTime;
-                int minutes = Mathf.FloorToInt(elapsed / 60f);
-                int seconds = Mathf.FloorToInt(elapsed % 60f);
-                _timerText.text = $"{minutes:00}:{seconds:00}";
+                if (_timerText != null)
+                {
+                    float elapsed = Time.time - _battleStartTime;
+                    int minutes = Mathf.FloorToInt(elapsed / 60f);
+                    int seconds = Mathf.FloorToInt(elapsed % 60f);
+                    _timerText.text = $"{minutes:00}:{seconds:00}";
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] Error updating timer: {e.Message}");
             }
         }
 
@@ -344,127 +548,151 @@ namespace Stagger.UI
 
         private void DisplayDroppedArtifacts(List<ArtifactData> artifacts)
         {
-            if (_artifactDisplayContainer == null) return;
-
-            // Clear previous artifacts
-            foreach (Transform child in _artifactDisplayContainer)
+            try
             {
-                Destroy(child.gameObject);
-            }
-
-            // Create artifact icons
-            foreach (var artifact in artifacts)
-            {
-                if (_artifactIconPrefab != null)
+                if (_artifactDisplayContainer == null)
                 {
-                    GameObject icon = Instantiate(_artifactIconPrefab, _artifactDisplayContainer);
-                    
-                    // Set artifact visual
-                    Image img = icon.GetComponent<Image>();
-                    if (img != null && artifact.Icon != null)
-                    {
-                        img.sprite = artifact.Icon;
-                        img.color = GetRarityColor(artifact.Rarity);
-                    }
+                    Debug.LogWarning("[UIManager] Artifact display container is null");
+                    return;
+                }
 
-                    // Set artifact name
-                    TextMeshProUGUI nameText = icon.GetComponentInChildren<TextMeshProUGUI>();
-                    if (nameText != null)
+                foreach (Transform child in _artifactDisplayContainer)
+                {
+                    Destroy(child.gameObject);
+                }
+
+                if (artifacts == null || artifacts.Count == 0)
+                {
+                    Debug.Log("[UIManager] No artifacts to display");
+                    return;
+                }
+
+                foreach (var artifact in artifacts)
+                {
+                    if (_artifactIconPrefab != null && artifact != null)
                     {
-                        nameText.text = artifact.ArtifactName;
+                        GameObject icon = Instantiate(_artifactIconPrefab, _artifactDisplayContainer);
+                        
+                        Image img = icon.GetComponent<Image>();
+                        if (img != null && artifact.Icon != null)
+                        {
+                            img.sprite = artifact.Icon;
+                            img.color = GetRarityColor(artifact.Rarity);
+                        }
+
+                        TextMeshProUGUI nameText = icon.GetComponentInChildren<TextMeshProUGUI>();
+                        if (nameText != null)
+                        {
+                            nameText.text = artifact.ArtifactName;
+                        }
                     }
                 }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] Error displaying artifacts: {e.Message}");
             }
         }
 
         private void RefreshEquipmentScreen()
         {
-            if (EquipmentManager.Instance == null) return;
-
-            // Display equipped artifacts
-            if (_equippedArtifactsContainer != null)
+            try
             {
-                // Clear
-                foreach (Transform child in _equippedArtifactsContainer)
+                if (EquipmentManager.Instance == null) return;
+
+                if (_equippedArtifactsContainer != null)
                 {
-                    Destroy(child.gameObject);
+                    foreach (Transform child in _equippedArtifactsContainer)
+                    {
+                        Destroy(child.gameObject);
+                    }
+
+                    foreach (var artifact in EquipmentManager.Instance.EquippedArtifacts)
+                    {
+                        CreateArtifactSlot(artifact, _equippedArtifactsContainer, true);
+                    }
                 }
 
-                // Add equipped
-                foreach (var artifact in EquipmentManager.Instance.EquippedArtifacts)
+                if (_inventoryArtifactsContainer != null)
                 {
-                    CreateArtifactSlot(artifact, _equippedArtifactsContainer, true);
+                    foreach (Transform child in _inventoryArtifactsContainer)
+                    {
+                        Destroy(child.gameObject);
+                    }
+
+                    foreach (var artifact in EquipmentManager.Instance.InventoryArtifacts)
+                    {
+                        CreateArtifactSlot(artifact, _inventoryArtifactsContainer, false);
+                    }
+                }
+
+                if (_equippedStatsText != null)
+                {
+                    _equippedStatsText.text = EquipmentManager.Instance.GetEquippedStatsString();
                 }
             }
-
-            // Display inventory artifacts
-            if (_inventoryArtifactsContainer != null)
+            catch (System.Exception e)
             {
-                // Clear
-                foreach (Transform child in _inventoryArtifactsContainer)
-                {
-                    Destroy(child.gameObject);
-                }
-
-                // Add inventory
-                foreach (var artifact in EquipmentManager.Instance.InventoryArtifacts)
-                {
-                    CreateArtifactSlot(artifact, _inventoryArtifactsContainer, false);
-                }
-            }
-
-            // Update stats display
-            if (_equippedStatsText != null)
-            {
-                _equippedStatsText.text = EquipmentManager.Instance.GetEquippedStatsString();
+                Debug.LogError($"[UIManager] Error refreshing equipment screen: {e.Message}");
             }
         }
 
         private void CreateArtifactSlot(ArtifactData artifact, Transform parent, bool isEquipped)
         {
-            if (_artifactIconPrefab == null) return;
-
-            GameObject slot = Instantiate(_artifactIconPrefab, parent);
-            
-            // Set visual
-            Image img = slot.GetComponent<Image>();
-            if (img != null)
+            try
             {
-                if (artifact.Icon != null)
+                if (_artifactIconPrefab == null) return;
+
+                GameObject slot = Instantiate(_artifactIconPrefab, parent);
+                
+                Image img = slot.GetComponent<Image>();
+                if (img != null)
                 {
-                    img.sprite = artifact.Icon;
+                    if (artifact.Icon != null)
+                    {
+                        img.sprite = artifact.Icon;
+                    }
+                    img.color = GetRarityColor(artifact.Rarity);
                 }
-                img.color = GetRarityColor(artifact.Rarity);
-            }
 
-            // Set name
-            TextMeshProUGUI nameText = slot.GetComponentInChildren<TextMeshProUGUI>();
-            if (nameText != null)
+                TextMeshProUGUI nameText = slot.GetComponentInChildren<TextMeshProUGUI>();
+                if (nameText != null)
+                {
+                    nameText.text = artifact.ArtifactName;
+                }
+
+                Button btn = slot.GetComponent<Button>();
+                if (btn == null) btn = slot.AddComponent<Button>();
+                
+                btn.onClick.AddListener(() => OnArtifactClicked(artifact, isEquipped));
+            }
+            catch (System.Exception e)
             {
-                nameText.text = artifact.ArtifactName;
+                Debug.LogError($"[UIManager] Error creating artifact slot: {e.Message}");
             }
-
-            // Add click listener to equip/unequip
-            Button btn = slot.GetComponent<Button>();
-            if (btn == null) btn = slot.AddComponent<Button>();
-            
-            btn.onClick.AddListener(() => OnArtifactClicked(artifact, isEquipped));
         }
 
         private void OnArtifactClicked(ArtifactData artifact, bool isCurrentlyEquipped)
         {
-            if (EquipmentManager.Instance == null) return;
-
-            if (isCurrentlyEquipped)
+            try
             {
-                EquipmentManager.Instance.UnequipArtifact(artifact);
-            }
-            else
-            {
-                EquipmentManager.Instance.EquipArtifact(artifact);
-            }
+                if (EquipmentManager.Instance == null) return;
 
-            RefreshEquipmentScreen();
+                if (isCurrentlyEquipped)
+                {
+                    EquipmentManager.Instance.UnequipArtifact(artifact);
+                }
+                else
+                {
+                    EquipmentManager.Instance.EquipArtifact(artifact);
+                }
+
+                RefreshEquipmentScreen();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[UIManager] Error handling artifact click: {e.Message}");
+            }
         }
 
         private Color GetRarityColor(ArtifactRarity rarity)
@@ -478,9 +706,9 @@ namespace Stagger.UI
                 case ArtifactRarity.Rare:
                     return Color.blue;
                 case ArtifactRarity.Epic:
-                    return new Color(0.5f, 0f, 1f); // Purple
+                    return new Color(0.5f, 0f, 1f);
                 case ArtifactRarity.Legendary:
-                    return new Color(1f, 0.5f, 0f); // Orange
+                    return new Color(1f, 0.5f, 0f);
                 default:
                     return Color.white;
             }

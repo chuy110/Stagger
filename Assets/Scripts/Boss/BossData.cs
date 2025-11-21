@@ -118,6 +118,7 @@ namespace Stagger.Boss
         [Header("Behavior")]
         public bool CanBeReflected = true;
         public float Damage = 10f;
+        public float ReflectedDamage = 15f;
         
         [Header("Effects")]
         public GameObject HitEffectPrefab;

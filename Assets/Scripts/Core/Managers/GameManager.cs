@@ -6,9 +6,8 @@ using Stagger.UI;
 namespace Stagger.Core.Managers
 {
     /// <summary>
-    /// Main Game Manager singleton controlling game flow and state.
-    /// Manages scene transitions, boss progression, and overall game state.
-    /// Uses State pattern for game states.
+    /// FIXED VERSION - Proper state management and boss lifecycle handling
+    /// Addresses: Boss continuing to run during results/equipment screens
     /// </summary>
     public class GameManager : MonoBehaviour
     {
@@ -46,8 +45,8 @@ namespace Stagger.Core.Managers
         [SerializeField] private int _bossesDefeated = 0;
         [SerializeField] private float _totalTimePlayed = 0f;
 
-        // Dropped artifacts from current boss
         private List<ArtifactData> _currentBossDrops = new List<ArtifactData>();
+        private List<ArtifactData> _lastDroppedArtifacts = new List<ArtifactData>();
 
         public enum GameState
         {
@@ -75,11 +74,12 @@ namespace Stagger.Core.Managers
             }
             _instance = this;
             DontDestroyOnLoad(gameObject);
+            
+            Debug.Log("[GameManager] Initialized");
         }
 
         private void Start()
         {
-            // Start at menu
             TransitionToState(GameState.Menu);
             
             if (UIManager.Instance != null)
@@ -98,12 +98,11 @@ namespace Stagger.Core.Managers
 
         #region Game Flow
 
-        /// <summary>
-        /// Start a new game from the beginning.
-        /// </summary>
         public void StartNewGame()
         {
+            Debug.Log("[GameManager] ═══════════════════════════");
             Debug.Log("[GameManager] Starting new game");
+            Debug.Log("[GameManager] ═══════════════════════════");
 
             _currentBossIndex = 0;
             _bossesDefeated = 0;
@@ -116,13 +115,13 @@ namespace Stagger.Core.Managers
                 EquipmentManager.Instance.ClearAllEquipment();
             }
 
+            // Clean up any existing boss
+            CleanupCurrentBoss();
+
             TransitionToState(GameState.Combat);
             LoadBoss(_currentBossIndex);
         }
 
-        /// <summary>
-        /// Load the next boss.
-        /// </summary>
         public void LoadNextBoss()
         {
             if (!HasMoreBosses)
@@ -133,13 +132,14 @@ namespace Stagger.Core.Managers
             }
 
             _currentBossIndex++;
+            
+            // CRITICAL FIX: Clean up previous boss before loading next
+            CleanupCurrentBoss();
+            
             TransitionToState(GameState.Combat);
             LoadBoss(_currentBossIndex);
         }
 
-        /// <summary>
-        /// Load the previous boss (if player wants to retry/grind).
-        /// </summary>
         public void LoadPreviousBoss()
         {
             if (!HasPreviousBoss)
@@ -149,13 +149,48 @@ namespace Stagger.Core.Managers
             }
 
             _currentBossIndex--;
+            
+            // CRITICAL FIX: Clean up current boss before loading previous
+            CleanupCurrentBoss();
+            
             TransitionToState(GameState.Combat);
             LoadBoss(_currentBossIndex);
         }
 
         /// <summary>
-        /// Load a specific boss by index.
+        /// CRITICAL FIX: Properly clean up boss before loading new one
         /// </summary>
+        private void CleanupCurrentBoss()
+        {
+            if (_currentBossController != null)
+            {
+                Debug.Log("[GameManager] Cleaning up current boss...");
+                
+                // Unsubscribe from events
+                _currentBossController.OnBossVictory.RemoveListener(OnBossDefeated);
+                
+                // Despawn all projectiles from this boss
+                if (PoolManager.Instance != null)
+                {
+                    try
+                    {
+                        PoolManager.Instance.DespawnAll<Projectile>("BossProjectile");
+                        Debug.Log("[GameManager] ✓ Despawned all projectiles");
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogWarning($"[GameManager] Error despawning projectiles: {e.Message}");
+                    }
+                }
+                
+                // Destroy boss GameObject
+                Destroy(_currentBossController.gameObject);
+                _currentBossController = null;
+                
+                Debug.Log("[GameManager] ✓ Boss cleaned up");
+            }
+        }
+
         private void LoadBoss(int index)
         {
             if (index < 0 || index >= _bossProgression.Count)
@@ -165,13 +200,9 @@ namespace Stagger.Core.Managers
             }
 
             BossData bossData = _bossProgression[index];
+            Debug.Log($"[GameManager] ════════════════════════════════");
             Debug.Log($"[GameManager] Loading boss: {bossData.BossName} (Index: {index})");
-
-            // Clear previous boss
-            if (_currentBossController != null)
-            {
-                Destroy(_currentBossController.gameObject);
-            }
+            Debug.Log($"[GameManager] ════════════════════════════════");
 
             // Spawn new boss
             SpawnBoss(bossData);
@@ -183,9 +214,6 @@ namespace Stagger.Core.Managers
             }
         }
 
-        /// <summary>
-        /// Spawn a boss from data.
-        /// </summary>
         private void SpawnBoss(BossData bossData)
         {
             if (bossData.BossPrefab == null)
@@ -205,11 +233,12 @@ namespace Stagger.Core.Managers
                 return;
             }
 
-            // Initialize boss
+            // Initialize boss - CRITICAL: This resets all flags
             _currentBossController.Initialize(bossData);
 
             // Subscribe to boss events (Observer pattern)
             _currentBossController.OnBossVictory.AddListener(OnBossDefeated);
+            Debug.Log("[GameManager] ✓ Subscribed to OnBossVictory");
             
             // Subscribe to health updates for UI
             BossHealth health = _currentBossController.Health;
@@ -219,26 +248,29 @@ namespace Stagger.Core.Managers
                 {
                     UIManager.Instance.UpdateBossHealth(health.CurrentHealth, health.MaxHealth);
                 });
+                
+                // Initialize health bar
+                UIManager.Instance.UpdateBossHealth(health.CurrentHealth, health.MaxHealth);
             }
 
-            Debug.Log($"[GameManager] Boss spawned: {bossData.BossName}");
+            Debug.Log($"[GameManager] ✓ Boss spawned: {bossData.BossName}");
         }
 
-        /// <summary>
-        /// Called when current boss is defeated.
-        /// </summary>
         private void OnBossDefeated()
         {
-            Debug.Log($"[GameManager] Boss defeated!");
+            Debug.Log($"[GameManager] ════════════════════════════════");
+            Debug.Log($"[GameManager] Boss defeated callback received!");
+            Debug.Log($"[GameManager] ════════════════════════════════");
 
             _bossesDefeated++;
-            _totalScore += 100; // Base score, can be modified
+            _totalScore += 100;
 
             // Get battle time
             float battleTime = UIManager.Instance != null ? UIManager.Instance.GetBattleTime() : 0f;
 
             // Get dropped artifacts
             _currentBossDrops = GetBossDrops();
+            _lastDroppedArtifacts = new List<ArtifactData>(_currentBossDrops);
 
             // Add artifacts to inventory
             if (EquipmentManager.Instance != null)
@@ -249,9 +281,10 @@ namespace Stagger.Core.Managers
                 }
             }
 
-            // Show result screen
+            // CRITICAL FIX: Transition to result state BEFORE showing screen
             TransitionToState(GameState.Result);
             
+            // Show result screen
             if (UIManager.Instance != null)
             {
                 string bossName = _currentBossController != null && _currentBossController.Data != null 
@@ -260,11 +293,10 @@ namespace Stagger.Core.Managers
                     
                 UIManager.Instance.ShowResultScreen(bossName, battleTime, _currentBossDrops);
             }
+            
+            Debug.Log("[GameManager] ✓ Result screen shown");
         }
 
-        /// <summary>
-        /// Get artifacts dropped by current boss.
-        /// </summary>
         private List<ArtifactData> GetBossDrops()
         {
             List<ArtifactData> drops = new List<ArtifactData>();
@@ -283,7 +315,6 @@ namespace Stagger.Core.Managers
                 return drops;
             }
 
-            // Roll for each possible drop
             foreach (var drop in bossData.PossibleDrops)
             {
                 if (drop.ArtifactData == null) continue;
@@ -304,30 +335,18 @@ namespace Stagger.Core.Managers
             return drops;
         }
 
-        /// <summary>
-        /// Called when all bosses are defeated.
-        /// </summary>
         private void GameComplete()
         {
             Debug.Log("[GameManager] ★★★ ALL BOSSES DEFEATED! GAME COMPLETE! ★★★");
-            
-            // TODO: Show victory screen or credits
             ReturnToMenu();
         }
 
-        /// <summary>
-        /// Return to main menu.
-        /// </summary>
         public void ReturnToMenu()
         {
             Debug.Log("[GameManager] Returning to menu");
 
             // Clean up current boss
-            if (_currentBossController != null)
-            {
-                Destroy(_currentBossController.gameObject);
-                _currentBossController = null;
-            }
+            CleanupCurrentBoss();
 
             TransitionToState(GameState.Menu);
             
@@ -337,9 +356,6 @@ namespace Stagger.Core.Managers
             }
         }
 
-        /// <summary>
-        /// Pause the game.
-        /// </summary>
         public void PauseGame()
         {
             if (_currentState == GameState.Combat)
@@ -353,9 +369,6 @@ namespace Stagger.Core.Managers
             }
         }
 
-        /// <summary>
-        /// Get the current boss data.
-        /// </summary>
         public BossData GetCurrentBossData()
         {
             if (_currentBossIndex >= 0 && _currentBossIndex < _bossProgression.Count)
@@ -367,12 +380,20 @@ namespace Stagger.Core.Managers
             return null;
         }
 
-        /// <summary>
-        /// Get the current boss controller instance.
-        /// </summary>
         public BossController GetCurrentBossController()
         {
             return _currentBossController;
+        }
+
+        public void SetLastDroppedArtifacts(List<ArtifactData> artifacts)
+        {
+            _lastDroppedArtifacts = artifacts;
+            Debug.Log($"[GameManager] Tracked {artifacts.Count} dropped artifacts");
+        }
+
+        public List<ArtifactData> GetLastDroppedArtifacts()
+        {
+            return _lastDroppedArtifacts;
         }
 
         #endregion
@@ -387,7 +408,7 @@ namespace Stagger.Core.Managers
             GameState previousState = _currentState;
             _currentState = newState;
 
-            Debug.Log($"[GameManager] State: {previousState} → {newState}");
+            Debug.Log($"[GameManager] ═══ State: {previousState} → {newState} ═══");
 
             OnStateChanged(previousState, newState);
         }
@@ -405,11 +426,14 @@ namespace Stagger.Core.Managers
                     break;
 
                 case GameState.Result:
+                    // CRITICAL FIX: Don't pause time, but boss will check state
                     Time.timeScale = 1f;
+                    Debug.Log("[GameManager] Result state - boss updates will be paused");
                     break;
 
                 case GameState.Equipment:
                     Time.timeScale = 1f;
+                    Debug.Log("[GameManager] Equipment state - boss updates will be paused");
                     break;
 
                 case GameState.Paused:

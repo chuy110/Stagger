@@ -1,6 +1,7 @@
 using UnityEngine;
 using Stagger.Core.Events;
 
+// FIXED: Removed references to non-existent ProjectileData properties
 // Parry system handles detection of projectiles during parry window and reflection.
 // Attach to Player GameObject
 [RequireComponent(typeof(PlayerController))]
@@ -11,8 +12,9 @@ public class ParrySystem : MonoBehaviour
     [SerializeField] private LayerMask _projectileLayer;
     
     [Header("Reflection")]
-    [SerializeField] private bool _reflectTowardBoss = true; // Reflect toward boss (recommended)
-    [SerializeField] private Vector2 _fallbackReflectionDirection = Vector2.up; // Fallback if boss not found
+    [SerializeField] private bool _reflectTowardBoss = true;
+    [SerializeField] private Vector2 _fallbackReflectionDirection = Vector2.up;
+    [SerializeField] private float _reflectionSpeedMultiplier = 1.5f;
     
     [Header("Events")]
     [SerializeField] private GameEvent _onParrySuccess;
@@ -24,7 +26,7 @@ public class ParrySystem : MonoBehaviour
 
     private PlayerController _player;
     private int _parriedThisWindow = 0;
-    private GameObject _bossCache; // Cache boss reference for performance
+    private GameObject _bossCache;
 
     private void Awake()
     {
@@ -33,7 +35,6 @@ public class ParrySystem : MonoBehaviour
 
     private void Start()
     {
-        // Cache boss reference
         _bossCache = GameObject.FindGameObjectWithTag("Boss");
         if (_bossCache == null)
         {
@@ -43,41 +44,38 @@ public class ParrySystem : MonoBehaviour
 
     private void Update()
     {
-        // Only check for parries when in parrying state
         if (_player.StateMachine.CurrentState is PlayerParryingState parryState)
         {
             CheckForProjectiles(parryState);
         }
     }
     
-    // Check for nearby projectiles to parry
     private void CheckForProjectiles(PlayerParryingState parryState)
     {
-        // Find all colliders in parry radius
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, _parryRadius, _projectileLayer);
 
         foreach (Collider2D hit in hits)
         {
-            // Check if it's a projectile
-            Projectile projectile = hit.GetComponent<Projectile>();
-            if (projectile != null && projectile.IsActive && !projectile.IsReflected)
+            Stagger.Boss.Projectile projectile = hit.GetComponent<Stagger.Boss.Projectile>();
+            if (projectile != null && projectile.gameObject.activeInHierarchy)
             {
-                // Attempt to parry this projectile
                 TryParryProjectile(projectile, parryState);
             }
         }
     }
     
-    // Attempt to parry a projectile based on timing
-    private void TryParryProjectile(Projectile projectile, PlayerParryingState parryState)
+    private void TryParryProjectile(Stagger.Boss.Projectile projectile, PlayerParryingState parryState)
     {
-        if (!projectile.Data.CanBeParried)
+        Stagger.Boss.ProjectileData data = projectile.Data;
+        if (data == null)
         {
-            Debug.Log($"[ParrySystem] Projectile {projectile.Data.ProjectileName} cannot be parried!");
+            Debug.LogWarning("[ParrySystem] Projectile has no data!");
             return;
         }
 
-        // Check timing quality
+        // REMOVED: CanBeParried check (property doesn't exist)
+        // Assume all projectiles can be parried unless you add this property to ProjectileData
+
         float timingQuality = parryState.GetTimingQuality();
 
         if (timingQuality > 0.8f)
@@ -102,54 +100,52 @@ public class ParrySystem : MonoBehaviour
         }
     }
     
-    // Parry (reflect) a projectile
-    private void ParryProjectile(Projectile projectile, bool isPerfect)
+    private void ParryProjectile(Stagger.Boss.Projectile projectile, bool isPerfect)
     {
         _parriedThisWindow++;
 
-        // Calculate reflection direction
         Vector2 reflectionDir;
         
         if (_reflectTowardBoss && _bossCache != null)
         {
-            // Calculate direction from projectile to boss
             Vector3 projectilePos = projectile.transform.position;
             Vector3 bossPos = _bossCache.transform.position;
-            
             reflectionDir = (bossPos - projectilePos).normalized;
-            
             Debug.Log($"[ParrySystem] Reflecting toward boss: {reflectionDir}");
         }
         else
         {
-            // Use fallback direction (straight up)
             reflectionDir = _fallbackReflectionDirection.normalized;
-            
             Debug.Log($"[ParrySystem] Using fallback reflection direction: {reflectionDir}");
         }
 
-        // Reflect the projectile
-        projectile.Reflect(reflectionDir);
+        Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
+        if (rb != null)
+        {
+            Stagger.Boss.ProjectileData data = projectile.Data;
+            float speed = data != null ? data.Speed : 10f;
+            rb.linearVelocity = reflectionDir * speed * _reflectionSpeedMultiplier;
+            Debug.Log($"[ParrySystem] Projectile reflected at speed: {rb.linearVelocity.magnitude}");
+        }
 
-        // Perfect parry bonus (could add damage multiplier, etc.)
         if (isPerfect)
         {
             Debug.Log($"[ParrySystem] Perfect parry bonus applied!");
             // TODO: Apply perfect parry bonuses (e.g., extra damage, slow-mo, etc.)
         }
 
-        // Call player's parry success callback
         _player.OnParrySuccess();
+        
+        // Change layer to prevent re-parrying
+        projectile.gameObject.layer = LayerMask.NameToLayer("Default");
     }
     
-    // Public method to check if a projectile can be parried right now
     public bool CanParryNow()
     {
         return _player.StateMachine.CurrentState is PlayerParryingState parryState && 
                parryState.IsParryActive();
     }
     
-    // Reset parry counter (called when parry state ends)
     public void ResetParryCount()
     {
         if (_parriedThisWindow > 0)
@@ -159,34 +155,30 @@ public class ParrySystem : MonoBehaviour
         _parriedThisWindow = 0;
     }
 
-    // Debug visualization
     private void OnDrawGizmos()
     {
         if (!_showDebugGizmos) return;
 
-        // Draw parry detection radius
         Color gizmoColor = Color.green;
         
         if (_player != null && _player.StateMachine.CurrentState is PlayerParryingState parryState)
         {
-            // Change color based on timing
             float quality = parryState.GetTimingQuality();
             if (quality > 0.8f)
-                gizmoColor = Color.yellow; // Perfect window
+                gizmoColor = Color.yellow;
             else if (quality > 0f)
-                gizmoColor = Color.green;  // Normal window
+                gizmoColor = Color.green;
             else
-                gizmoColor = Color.red;    // Missed window
+                gizmoColor = Color.red;
         }
         else
         {
-            gizmoColor = Color.gray; // Not in parry state
+            gizmoColor = Color.gray;
         }
 
         Gizmos.color = gizmoColor;
         Gizmos.DrawWireSphere(transform.position, _parryRadius);
         
-        // Draw line to boss (if in parry state and boss exists)
         if (_bossCache != null && _player != null && _player.StateMachine.CurrentState is PlayerParryingState)
         {
             Gizmos.color = Color.cyan;

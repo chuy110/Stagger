@@ -1,6 +1,7 @@
 using UnityEngine;
 using Stagger.Core.Managers;
 
+// FIXED: Explicit namespace qualification for Projectile types
 /// <summary>
 /// Simple projectile spawner for testing combat.
 /// Attach to an empty GameObject in the scene.
@@ -8,16 +9,16 @@ using Stagger.Core.Managers;
 public class ProjectileSpawner : MonoBehaviour
 {
     [Header("Spawning")]
-    [SerializeField] private ProjectileData _projectileData;
+    [SerializeField] private Stagger.Boss.ProjectileData _projectileData; // FIXED: Explicit namespace
     [SerializeField] private GameObject _projectilePrefab;
-    [SerializeField] private Transform _target; // Usually the player
+    [SerializeField] private Transform _target;
     [SerializeField] private float _spawnInterval = 2f;
     [SerializeField] private bool _autoSpawn = true;
     
     [Header("Spawn Pattern")]
     [SerializeField] private bool _aimAtTarget = true;
     [SerializeField] private Vector2 _fixedDirection = Vector2.down;
-    [SerializeField] private float _spreadAngle = 0f; // Random spread in degrees
+    [SerializeField] private float _spreadAngle = 0f;
     
     [Header("Pool Settings")]
     [SerializeField] private string _poolKey = "Projectile_Default";
@@ -28,10 +29,10 @@ public class ProjectileSpawner : MonoBehaviour
 
     private void Start()
     {
-        // Initialize pool
         if (PoolManager.Instance != null && _projectilePrefab != null)
         {
-            Projectile projComponent = _projectilePrefab.GetComponent<Projectile>();
+            // FIXED: Explicit namespace
+            Stagger.Boss.Projectile projComponent = _projectilePrefab.GetComponent<Stagger.Boss.Projectile>();
             if (projComponent != null)
             {
                 PoolManager.Instance.CreatePool(_poolKey, projComponent, _initialPoolSize);
@@ -44,7 +45,6 @@ public class ProjectileSpawner : MonoBehaviour
             }
         }
 
-        // Find player if target not set
         if (_target == null)
         {
             GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -68,9 +68,6 @@ public class ProjectileSpawner : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Spawn a projectile from the pool.
-    /// </summary>
     [ContextMenu("Spawn Projectile")]
     public void SpawnProjectile()
     {
@@ -80,18 +77,16 @@ public class ProjectileSpawner : MonoBehaviour
             return;
         }
 
-        // Get projectile from pool
-        Projectile projectile = PoolManager.Instance.Spawn<Projectile>(_poolKey);
+        // FIXED: Explicit namespace
+        Stagger.Boss.Projectile projectile = PoolManager.Instance.Spawn<Stagger.Boss.Projectile>(_poolKey);
         if (projectile == null)
         {
             Debug.LogError($"[ProjectileSpawner] Failed to spawn projectile from pool");
             return;
         }
 
-        // Position at spawner
         projectile.transform.position = transform.position;
 
-        // Calculate direction
         Vector2 direction;
         if (_aimAtTarget && _target != null)
         {
@@ -102,24 +97,26 @@ public class ProjectileSpawner : MonoBehaviour
             direction = _fixedDirection.normalized;
         }
 
-        // Apply spread
         if (_spreadAngle > 0f)
         {
             float randomAngle = Random.Range(-_spreadAngle, _spreadAngle);
             direction = Quaternion.Euler(0, 0, randomAngle) * direction;
         }
 
-        // Initialize projectile
+        projectile.SetPoolKey(_poolKey);
         projectile.Initialize(_projectileData, direction);
 
         Debug.Log($"[ProjectileSpawner] Spawned projectile toward {direction}");
     }
 
-    /// <summary>
-    /// Spawn multiple projectiles in a spread pattern.
-    /// </summary>
     public void SpawnSpread(int count, float spreadAngle)
     {
+        if (!_poolInitialized || _projectileData == null)
+        {
+            Debug.LogWarning($"[ProjectileSpawner] Cannot spawn - pool not initialized or data missing");
+            return;
+        }
+
         float angleStep = spreadAngle / (count - 1);
         float startAngle = -spreadAngle / 2f;
 
@@ -127,42 +124,36 @@ public class ProjectileSpawner : MonoBehaviour
         {
             float angle = startAngle + (angleStep * i);
             
-            // Get projectile from pool
-            Projectile projectile = PoolManager.Instance.Spawn<Projectile>(_poolKey);
+            // FIXED: Explicit namespace
+            Stagger.Boss.Projectile projectile = PoolManager.Instance.Spawn<Stagger.Boss.Projectile>(_poolKey);
             if (projectile == null) continue;
 
-            // Position at spawner
             projectile.transform.position = transform.position;
 
-            // Calculate direction with angle
             Vector2 baseDirection = _aimAtTarget && _target != null 
                 ? (_target.position - transform.position).normalized 
                 : _fixedDirection.normalized;
             
             Vector2 direction = Quaternion.Euler(0, 0, angle) * baseDirection;
 
-            // Initialize projectile
+            projectile.SetPoolKey(_poolKey);
             projectile.Initialize(_projectileData, direction);
         }
 
         Debug.Log($"[ProjectileSpawner] Spawned {count} projectiles in spread pattern");
     }
 
-    // Debug visualization
     private void OnDrawGizmos()
     {
-        // Draw spawn point
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, 0.3f);
 
-        // Draw direction
         Vector2 direction = _aimAtTarget && _target != null 
             ? (_target.position - transform.position).normalized 
             : _fixedDirection.normalized;
 
         Gizmos.DrawLine(transform.position, transform.position + (Vector3)(direction * 2f));
 
-        // Draw spread cone
         if (_spreadAngle > 0f)
         {
             Gizmos.color = Color.yellow;

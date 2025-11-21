@@ -2408,7 +2408,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 523768cdcdf822b408959e823920ca01, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectileSpawner
-  _projectileData: {fileID: 11400000, guid: 539b4f1801823974e8275aea82dd9b2d, type: 2}
+  _projectileData:
+    ProjectileSprite: {fileID: 0}
+    ProjectileColor: {r: 1, g: 1, b: 1, a: 1}
+    Size: 1
+    Speed: 10
+    Lifetime: 5
+    CanBeReflected: 1
+    Damage: 10
+    HitEffectPrefab: {fileID: 0}
+    FireSound: {fileID: 0}
+    HitSound: {fileID: 0}
   _projectilePrefab: {fileID: 6952953168137140234, guid: 80de8c89fec243c46ba57d5896994621, type: 3}
   _target: {fileID: 860436021}
   _spawnInterval: 2
@@ -2945,6 +2955,7 @@ MonoBehaviour:
     m_Bits: 64
   _reflectTowardBoss: 1
   _fallbackReflectionDirection: {x: 0, y: 1}
+  _reflectionSpeedMultiplier: 1.5
   _onParrySuccess: {fileID: 11400000, guid: d3be0fa3874832041a5f928e14db842d, type: 2}
   _onParryFailed: {fileID: 11400000, guid: 21d6e6cd03902364ebc0e17a09ab4925, type: 2}
   _onPerfectParry: {fileID: 0}
@@ -3327,7 +3338,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 523768cdcdf822b408959e823920ca01, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectileSpawner
-  _projectileData: {fileID: 11400000, guid: 539b4f1801823974e8275aea82dd9b2d, type: 2}
+  _projectileData:
+    ProjectileSprite: {fileID: 0}
+    ProjectileColor: {r: 1, g: 1, b: 1, a: 1}
+    Size: 1
+    Speed: 10
+    Lifetime: 5
+    CanBeReflected: 1
+    Damage: 10
+    HitEffectPrefab: {fileID: 0}
+    FireSound: {fileID: 0}
+    HitSound: {fileID: 0}
   _projectilePrefab: {fileID: 6952953168137140234, guid: 80de8c89fec243c46ba57d5896994621, type: 3}
   _target: {fileID: 860436021}
   _spawnInterval: 2
@@ -4604,7 +4625,19 @@ MonoBehaviour:
   _executionKey: 101
   OnBossVictory:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1384869184}
+        m_TargetAssemblyTypeName: Stagger.UI.UIManager, Assembly-CSharp
+        m_MethodName: ShowResultScreenFromBossVictory
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   _showDebugGizmos: 1
 --- !u!114 &1354569365
 MonoBehaviour:
