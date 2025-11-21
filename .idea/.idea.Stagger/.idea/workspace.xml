@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Stagger/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="4702349c-c90c-4903-befb-57a278022ac4" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -38,7 +36,7 @@
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="SWEA" />
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -126,7 +124,7 @@
       <workItem from="1763459907490" duration="8192000" />
       <workItem from="1763617445413" duration="6490000" />
       <workItem from="1763690601077" duration="804000" />
-      <workItem from="1763712427512" duration="7000" />
+      <workItem from="1763712424436" duration="5438000" />
     </task>
     <task id="LOCAL-00001" summary="connected project to github">
       <option name="closed" value="true" />

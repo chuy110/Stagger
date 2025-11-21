@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.Events;
+using System.Collections;
 
 namespace Stagger.Boss
 {
     /// <summary>
     /// Manages boss health, damage, and death.
-    /// Triggers thread break thresholds and defeat events.
-    /// Implements Observer pattern through UnityEvents.
+    /// CRASH FIX: Uses deferred event invocation to prevent Unity crashes during physics callbacks
     /// </summary>
     [RequireComponent(typeof(BossController))]
     public class BossHealth : MonoBehaviour
@@ -32,19 +32,13 @@ namespace Stagger.Boss
         
         [Header("Debug")]
         [SerializeField] private bool _isInvulnerable = false;
-        
-        [ContextMenu("Debug: Check Invulnerability")]
-        private void DebugCheckInvulnerability()
-        {
-            Debug.Log($"[BossHealth] Invulnerable: {_isInvulnerable}, Dead: {_isDead}, HP: {_currentHealth}/{_maxHealth}");
-        }
 
         private float _currentHealth;
         private float _maxHealth;
         private int _nextThresholdIndex = 0;
         private bool _isDead = false;
         private bool _allThreadsBroken = false;
-        private bool _deathTriggered = false; // NEW: Prevent multiple death triggers
+        private bool _deathTriggered = false;
 
         // Properties
         public BossData Data => _bossData;
@@ -62,28 +56,26 @@ namespace Stagger.Boss
             _nextThresholdIndex = 0;
             _isDead = false;
             _allThreadsBroken = false;
-            _deathTriggered = false; // RESET
+            _deathTriggered = false;
+            _isInvulnerable = false;
+            
+            // Re-enable component for respawn scenarios
+            enabled = true;
             
             Debug.Log($"[BossHealth] Initialized: {bossData.BossName}, HP: {_currentHealth}/{_maxHealth}");
             
-            // Raise initial health events
             OnHealthChanged?.Invoke(_currentHealth);
             OnHealthPercentChanged?.Invoke(HealthPercent);
         }
 
-        /// <summary>
-        /// Deal damage to the boss.
-        /// </summary>
         public void TakeDamage(float damage)
         {
-            // CRITICAL: Allow death even if invulnerable (for execution)
             if (_isDead)
             {
                 Debug.Log("[BossHealth] Already dead, ignoring damage");
                 return;
             }
 
-            // Block damage if invulnerable (unless it's massive execution damage)
             if (_isInvulnerable && damage < _maxHealth)
             {
                 Debug.Log($"[BossHealth] Damage blocked - Boss is invulnerable");
@@ -95,27 +87,21 @@ namespace Stagger.Boss
             
             Debug.Log($"[BossHealth] Took {damage} damage! HP: {_currentHealth}/{_maxHealth} ({HealthPercent:F1}%)");
 
-            // Raise events (Observer pattern)
             OnHealthChanged?.Invoke(_currentHealth);
             OnHealthPercentChanged?.Invoke(HealthPercent);
             OnBossDamaged?.Invoke();
 
-            // Check for thread break thresholds (only if threads not all broken)
             if (!_allThreadsBroken)
             {
                 CheckThresholds(previousHealth);
             }
 
-            // Check for death
             if (_currentHealth <= 0f)
             {
                 Die();
             }
         }
 
-        /// <summary>
-        /// Heal the boss (for testing or mechanics).
-        /// </summary>
         public void Heal(float amount)
         {
             if (_isDead) return;
@@ -128,10 +114,6 @@ namespace Stagger.Boss
             OnHealthPercentChanged?.Invoke(HealthPercent);
         }
 
-        /// <summary>
-        /// Check if any thread break thresholds have been crossed.
-        /// FIXED: Only checks the NEXT threshold, not all of them at once
-        /// </summary>
         private void CheckThresholds(float previousHealth)
         {
             if (_bossData == null || _bossData.ThreadBreakThresholds == null) 
@@ -143,79 +125,99 @@ namespace Stagger.Boss
             float previousPercent = (previousHealth / _maxHealth) * 100f;
             float currentPercent = HealthPercent;
 
-            Debug.Log($"[BossHealth] Checking thresholds: {previousPercent:F1}% → {currentPercent:F1}%, Next index: {_nextThresholdIndex}");
-
-            // Only check if we have thresholds left to check
             if (_nextThresholdIndex >= _bossData.ThreadBreakThresholds.Count)
             {
-                Debug.Log("[BossHealth] All thresholds already triggered");
                 return;
             }
 
-            // Get the NEXT threshold to check (not all of them!)
             float threshold = _bossData.ThreadBreakThresholds[_nextThresholdIndex];
             
-            Debug.Log($"[BossHealth] Checking threshold {_nextThresholdIndex}: {threshold}% (prev: {previousPercent:F1}%, curr: {currentPercent:F1}%)");
-            
-            // Check if we crossed THIS threshold
             if (previousPercent >= threshold && currentPercent < threshold)
             {
                 Debug.Log($"[BossHealth] <color=yellow>★★★ THREAD BREAK THRESHOLD! ★★★</color> {threshold}% HP reached");
                 
-                // Make boss invulnerable until thread breaks
                 SetInvulnerable(true);
                 Debug.Log("[BossHealth] Boss is now INVULNERABLE until thread breaks!");
                 
-                // Raise thread break event with threshold index (Observer pattern)
                 if (OnThreadBreakThreshold != null)
                 {
-                    Debug.Log($"[BossHealth] ✓ Invoking OnThreadBreakThreshold event with index {_nextThresholdIndex}");
                     OnThreadBreakThreshold.Invoke(_nextThresholdIndex);
-                }
-                else
-                {
-                    Debug.LogError("[BossHealth] ✗ OnThreadBreakThreshold event is NULL!");
                 }
                 
                 _nextThresholdIndex++;
-            }
-            else if (currentPercent >= threshold)
-            {
-                Debug.Log($"[BossHealth] Still above threshold {threshold}%, no trigger yet");
             }
         }
 
         /// <summary>
         /// Kill the boss.
-        /// FIXED: Simplified to just set flags and trigger event once
+        /// CRASH FIX: Defers event invocation to avoid physics callback issues
         /// </summary>
         private void Die()
         {
-            // CRITICAL: Prevent multiple death triggers
-            if (_deathTriggered) return;
+            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log($"[BossHealth] Die() called - Death triggered: {_deathTriggered}");
+            
+            if (_deathTriggered)
+            {
+                Debug.LogWarning("[BossHealth] ⚠ Death already triggered - BLOCKING duplicate call");
+                return;
+            }
+            
             _deathTriggered = true;
-
             _isDead = true;
             _currentHealth = 0f;
             _isInvulnerable = false;
 
-            Debug.Log($"[BossHealth] DEFEATED!");
+            Debug.Log($"[BossHealth] ✓ Boss marked as defeated");
             
-            // Trigger death event ONCE
-            OnBossDefeated?.Invoke();
+            // CRASH FIX: Start coroutine BEFORE disabling component
+            Debug.Log($"[BossHealth] Starting deferred death invocation coroutine...");
+            StartCoroutine(DeferredDeathEvent());
             
-            // CRITICAL: Disable this component to stop taking damage
-            enabled = false;
-            
-            Debug.Log("[BossHealth] Component disabled - boss is dead");
+            Debug.Log("═══════════════════════════════════════════");
         }
 
         /// <summary>
-        /// Set invulnerability (for cutscenes, thread breaks, etc.)
+        /// CRASH FIX: Deferred death event invocation.
+        /// Invokes OnBossDefeated on next frame to avoid physics callback issues.
         /// </summary>
+        private IEnumerator DeferredDeathEvent()
+        {
+            Debug.Log("[BossHealth] Waiting for end of frame...");
+            
+            yield return new WaitForEndOfFrame();
+            
+            Debug.Log($"[BossHealth] End of frame reached, invoking OnBossDefeated event...");
+            
+            if (OnBossDefeated != null)
+            {
+                int listenerCount = OnBossDefeated.GetPersistentEventCount();
+                Debug.Log($"[BossHealth] OnBossDefeated has {listenerCount} persistent listeners");
+                
+                try
+                {
+                    OnBossDefeated.Invoke();
+                    Debug.Log($"[BossHealth] ✓ OnBossDefeated invoked successfully");
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError($"[BossHealth] ✗ Error invoking OnBossDefeated: {e.Message}");
+                    Debug.LogError($"[BossHealth] Stack trace: {e.StackTrace}");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[BossHealth] ⚠ OnBossDefeated is NULL - no listeners");
+            }
+            
+            enabled = false;
+            Debug.Log($"[BossHealth] ✓ Component disabled");
+            
+            Debug.Log("[BossHealth] ✓✓✓ Deferred death event COMPLETE ✓✓✓");
+        }
+
         public void SetInvulnerable(bool invulnerable)
         {
-            // Don't set invulnerable if boss is dead
             if (_isDead && invulnerable)
             {
                 Debug.Log("[BossHealth] Cannot make dead boss invulnerable");
@@ -226,29 +228,20 @@ namespace Stagger.Boss
             Debug.Log($"[BossHealth] Invulnerability: {invulnerable}");
         }
 
-        /// <summary>
-        /// Called when all threads are broken - boss ready for execution
-        /// </summary>
         public void OnAllThreadsBroken()
         {
             _allThreadsBroken = true;
-            SetInvulnerable(true); // Permanently invulnerable until execution
+            SetInvulnerable(true);
             Debug.Log("[BossHealth] All threads broken - boss is now invulnerable until execution!");
         }
 
-        /// <summary>
-        /// Instant kill for execution - bypasses invulnerability
-        /// </summary>
         public void ExecutionKill()
         {
             Debug.Log("[BossHealth] EXECUTION KILL!");
-            _isInvulnerable = false; // Remove invulnerability
-            TakeDamage(_maxHealth * 10f); // Massive overkill damage to ensure death
+            _isInvulnerable = false;
+            TakeDamage(_maxHealth * 10f);
         }
 
-        /// <summary>
-        /// Reset health to full (for testing).
-        /// </summary>
         [ContextMenu("Debug: Reset Health")]
         public void ResetHealth()
         {
@@ -258,30 +251,29 @@ namespace Stagger.Boss
             }
         }
 
-        /// <summary>
-        /// Take damage equal to 25% of max health (for testing thresholds).
-        /// </summary>
         [ContextMenu("Debug: Take 25% Damage")]
         public void DebugTakeDamage()
         {
             TakeDamage(_maxHealth * 0.25f);
         }
 
-        // Debug visualization
+        [ContextMenu("Debug: Check Invulnerability")]
+        private void DebugCheckInvulnerability()
+        {
+            Debug.Log($"[BossHealth] Invulnerable: {_isInvulnerable}, Dead: {_isDead}, HP: {_currentHealth}/{_maxHealth}");
+        }
+
         private void OnDrawGizmos()
         {
             if (!Application.isPlaying) return;
 
-            // Draw health bar above boss
             Vector3 healthBarPos = transform.position + Vector3.up * 2f;
             float barWidth = 2f;
             float barHeight = 0.2f;
 
-            // Background (gray)
             Gizmos.color = Color.gray;
             Gizmos.DrawCube(healthBarPos, new Vector3(barWidth, barHeight, 0f));
 
-            // Foreground (health - green/yellow/red based on %)
             float healthWidth = barWidth * (HealthPercent / 100f);
             Color healthColor = HealthPercent > 50f ? Color.green : HealthPercent > 25f ? Color.yellow : Color.red;
             Gizmos.color = healthColor;
@@ -289,7 +281,6 @@ namespace Stagger.Boss
             Gizmos.DrawCube(healthPos, new Vector3(healthWidth, barHeight, 0f));
 
 #if UNITY_EDITOR
-            // Draw HP text
             UnityEditor.Handles.Label(healthBarPos + Vector3.up * 0.3f, 
                 $"{_currentHealth:F0}/{_maxHealth:F0} ({HealthPercent:F0}%)");
 #endif
